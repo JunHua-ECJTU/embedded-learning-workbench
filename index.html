@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="配合嵌入式学习计划使用的本地任务、进度、笔记、里程碑与复盘工作台。">
+  <meta name="theme-color" content="#14161a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%230d7a5f'/%3E%3Cpath%20d='M6%2020h5v-7h5v4h5V8h5'%20fill='none'%20stroke='%23fff'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E">
+  <title>嵌入式学习工作台</title>
+  <script>
+    (function () {
+      var theme = null;
+      try {
+        var storedTheme = localStorage.getItem('emb-wb:theme');
+        theme = storedTheme === null ? null : JSON.parse(storedTheme);
+      } catch (error) {}
+      document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark');
+    }());
+  </script>
+  <style>
+    /*
+      Embedded design contract
+      Atmosphere: a quiet firmware command surface with circuit-board precision.
+      References: the companion learning plan's emerald identity and Linear's tonal depth.
+      Layout: one bounded shell, fixed navigation, one main scroll owner.
+      Primitives: button, field, tag, card, list row, progress track, empty state.
+      Accessibility: WCAG 2.2 AA intent, visible focus, 44px mobile targets, reduced motion.
+    */
+    :root {
+      color-scheme: light;
+      --bg: #f5f4ef;
+      --sidebar: #eeece6;
+      --surface: #ffffff;
+      --surface-raised: #fafaf7;
+      --surface-muted: #e9e7e1;
+      --text: #202623;
+      --text-soft: #5f6863;
+      --text-faint: #7f8883;
+      --line: #d9d8d1;
+      --line-strong: #c7c9c2;
+      --accent: #0d7a5f;
+      --accent-hover: #08634d;
+      --accent-ink: #f4fff9;
+      --accent-soft: #dcefe8;
+      --accent-line: #9fcdbd;
+      --danger: #b33b45;
+      --danger-soft: #f6e3e5;
+      --warning: #9a6212;
+      --warning-soft: #f6ead6;
+      --info: #356a8a;
+      --info-soft: #e0edf4;
+      --low: #69736e;
+      --low-soft: #e8ebe9;
+      --cat-c: #0d7a5f;
+      --cat-c-bg: #dcefe8;
+      --cat-stm: #356a8a;
+      --cat-stm-bg: #e0edf4;
+      --cat-rtos: #7b5c9c;
+      --cat-rtos-bg: #ede6f4;
+      --cat-linux: #9a6212;
+      --cat-linux-bg: #f6ead6;
+      --cat-circuit: #a24550;
+      --cat-circuit-bg: #f6e3e5;
+      --cat-other: #69736e;
+      --cat-other-bg: #e8ebe9;
+      --shadow-1: 0 1px 2px rgba(25, 44, 36, 0.06), 0 8px 22px rgba(25, 44, 36, 0.05);
+      --shadow-2: 0 12px 32px rgba(25, 44, 36, 0.14);
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --radius-field: 6px;
+      --radius-card: 8px;
+      --touch: 44px;
+      --sidebar-wide: 264px;
+      --sidebar-rail: 76px;
+      --content-pad: 32px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --text-xs: 12px;
+      --text-sm: 14px;
+      --text-md: 16px;
+      --text-lg: 18px;
+      --text-xl: 24px;
+      --text-2xl: 32px;
+      --motion-fast: 120ms;
+      --motion-standard: 220ms;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #14161a;
+      --sidebar: #111317;
+      --surface: #1b1e23;
+      --surface-raised: #20242a;
+      --surface-muted: #262a31;
+      --text: #e8ecea;
+      --text-soft: #a8b0ac;
+      --text-faint: #7b847f;
+      --line: #2d3239;
+      --line-strong: #3a4149;
+      --accent: #34d399;
+      --accent-hover: #6ee7b7;
+      --accent-ink: #0b1512;
+      --accent-soft: rgba(52, 211, 153, 0.12);
+      --accent-line: rgba(52, 211, 153, 0.32);
+      --danger: #f1848e;
+      --danger-soft: rgba(241, 132, 142, 0.12);
+      --warning: #e7b55f;
+      --warning-soft: rgba(231, 181, 95, 0.12);
+      --info: #79b7dc;
+      --info-soft: rgba(121, 183, 220, 0.12);
+      --low: #a2aaa6;
+      --low-soft: rgba(162, 170, 166, 0.1);
+      --cat-c: #56d9a6;
+      --cat-c-bg: rgba(86, 217, 166, 0.12);
+      --cat-stm: #83c4e8;
+      --cat-stm-bg: rgba(131, 196, 232, 0.12);
+      --cat-rtos: #c3a0e6;
+      --cat-rtos-bg: rgba(195, 160, 230, 0.12);
+      --cat-linux: #e6b86a;
+      --cat-linux-bg: rgba(230, 184, 106, 0.12);
+      --cat-circuit: #ed9099;
+      --cat-circuit-bg: rgba(237, 144, 153, 0.12);
+      --cat-other: #a8b0ac;
+      --cat-other-bg: rgba(168, 176, 172, 0.1);
+      --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.24), 0 12px 28px rgba(0, 0, 0, 0.16);
+      --shadow-2: 0 18px 44px rgba(0, 0, 0, 0.34);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-width: 0; overflow: hidden; }
+    html { block-size: 100%; }
+    body {
+      block-size: 100dvh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: var(--text-sm);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select, textarea { font: inherit; }
+    button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: inherit; }
+    svg { display: block; }
+    .icon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .icon-lg { width: 22px; height: 22px; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .skip-link {
+      position: fixed;
+      inset: var(--space-2) auto auto var(--space-2);
+      z-index: 100;
+      transform: translateY(-160%);
+      background: var(--accent);
+      color: var(--accent-ink);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-field);
+      font-weight: 700;
+    }
+    .skip-link:focus { transform: translateY(0); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    ::selection { background: var(--accent-soft); }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: var(--sidebar-wide) minmax(0, 1fr);
+      block-size: 100dvh;
+      overflow: hidden;
+    }
+    .sidebar {
+      min-block-size: 0;
+      overflow-y: auto;
+      background: var(--sidebar);
+      border-inline-end: 1px solid var(--line);
+      padding: var(--space-4) var(--space-3);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      min-width: 0;
+      padding: var(--space-2);
+      color: var(--text);
+      text-decoration: none;
+    }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-card);
+      display: grid;
+      place-items: center;
+      color: var(--accent-ink);
+      background: var(--accent);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      flex: none;
+    }
+    .brand-copy { min-width: 0; }
+    .brand-copy strong { display: block; font-size: var(--text-md); line-height: 1.25; white-space: nowrap; }
+    .brand-copy small { display: block; margin-top: var(--space-1); color: var(--text-faint); font-family: var(--font-mono); font-size: var(--text-xs); white-space: nowrap; }
+    .sidebar-nav { display: grid; gap: var(--space-1); }
+    .nav-link {
+      min-height: var(--touch);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      color: var(--text-soft);
+      text-decoration: none;
+      border-radius: var(--radius-field);
+      font-weight: 600;
+      position: relative;
+    }
+    .nav-link:hover { background: var(--surface-muted); color: var(--text); }
+    .nav-link[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+    .nav-link[aria-current="page"]::before {
+      content: "";
+      position: absolute;
+      inset-block: 10px;
+      inset-inline-start: 0;
+      width: 3px;
+      border-radius: 99px;
+      background: var(--accent);
+    }
+    .nav-label { white-space: nowrap; }
+    .sidebar-spacer { flex: 1; }
+    .sidebar-tools { border-top: 1px solid var(--line); padding-top: var(--space-3); display: grid; gap: var(--space-1); }
+    .tool-button, .tool-link {
+      width: 100%;
+      min-height: var(--touch);
+      border: 0;
+      border-radius: var(--radius-field);
+      background: transparent;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      text-decoration: none;
+      cursor: pointer;
+      text-align: start;
+    }
+    .tool-button:hover, .tool-link:hover { background: var(--surface-muted); color: var(--text); }
+    .tool-button.danger:hover { color: var(--danger); background: var(--danger-soft); }
+    .local-note { color: var(--text-faint); font-size: var(--text-xs); padding: var(--space-2) var(--space-3) 0; overflow-wrap: anywhere; }
+    .collapse-button { justify-content: center; border: 1px solid var(--line); background: var(--surface); }
+
+    .workspace { min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; }
+    .mobile-topbar, .mobile-bottom-nav { display: none; }
+    .view { width: 100%; padding: var(--content-pad); }
+    .view-inner { width: 100%; max-width: 1540px; margin-inline: auto; }
+    .view-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+    .view-heading { min-width: 0; }
+    .view-kicker { color: var(--accent); font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 700; margin: 0 0 var(--space-2); }
+    .view-title { margin: 0; font-size: var(--text-2xl); line-height: 1.2; letter-spacing: 0; }
+    .view-description { margin: var(--space-2) 0 0; color: var(--text-soft); font-size: var(--text-md); max-width: 68ch; overflow-wrap: anywhere; }
+    .view-context { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; justify-content: flex-end; }
+    .date-chip { color: var(--text-soft); font-family: var(--font-mono); font-size: var(--text-xs); border: 1px solid var(--line); padding: var(--space-2) var(--space-3); border-radius: 999px; background: var(--surface); white-space: nowrap; }
+
+    .button {
+      min-height: 40px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-field);
+      background: var(--surface-raised);
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: transform var(--motion-fast) ease, border-color var(--motion-fast) ease, background var(--motion-fast) ease;
+    }
+    .button:hover { border-color: var(--accent-line); background: var(--surface-muted); }
+    .button:active { transform: scale(0.97); }
+    .button.primary { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+    .button.primary:hover { background: var(--accent-hover); }
+    .button.ghost { background: transparent; }
+    .button.danger { color: var(--danger); }
+    .button.small { min-height: 34px; padding: var(--space-1) var(--space-3); font-size: var(--text-xs); }
+    .icon-button { width: 36px; min-width: 36px; height: 36px; min-height: 36px; padding: 0; }
+
+    .field, select.field, textarea.field {
+      width: 100%;
+      min-width: 0;
+      min-height: 42px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-field);
+      background: var(--surface-raised);
+      color: var(--text);
+      padding: 9px var(--space-3);
+    }
+    textarea.field { min-height: 104px; resize: vertical; line-height: 1.6; }
+    .field::placeholder { color: var(--text-faint); }
+    .field:focus { border-color: var(--accent); outline: 2px solid var(--accent-soft); outline-offset: 1px; }
+    .form-label { display: grid; gap: var(--space-2); color: var(--text-soft); font-weight: 700; }
+    .form-hint { font-size: var(--text-xs); color: var(--text-faint); font-weight: 400; }
+    .quick-form { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .quick-form .grow { flex: 1 1 280px; }
+    .quick-form .compact { flex: 0 1 150px; }
+
+    .card {
+      min-width: 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-1);
+      padding: var(--space-5);
+      overflow-wrap: anywhere;
+    }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+    .card-title { margin: 0; font-size: var(--text-lg); line-height: 1.35; }
+    .card-description { margin: var(--space-1) 0 0; color: var(--text-soft); }
+    .section-title { margin: 0 0 var(--space-4); font-size: var(--text-xl); }
+    .meta-row { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .tag { display: inline-flex; align-items: center; min-height: 24px; padding: 2px var(--space-2); border-radius: 999px; border: 1px solid var(--line); color: var(--text-soft); background: var(--surface-raised); font-size: var(--text-xs); font-weight: 700; white-space: nowrap; }
+    .tag.phase { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); font-family: var(--font-mono); }
+    .tag.high { color: var(--danger); border-color: transparent; background: var(--danger-soft); }
+    .tag.medium { color: var(--warning); border-color: transparent; background: var(--warning-soft); }
+    .tag.low { color: var(--low); border-color: transparent; background: var(--low-soft); }
+    .tag.current { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+    .tag.passed { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+    .tag.cat-c { color: var(--cat-c); background: var(--cat-c-bg); border-color: transparent; }
+    .tag.cat-stm32 { color: var(--cat-stm); background: var(--cat-stm-bg); border-color: transparent; }
+    .tag.cat-rtos { color: var(--cat-rtos); background: var(--cat-rtos-bg); border-color: transparent; }
+    .tag.cat-linux { color: var(--cat-linux); background: var(--cat-linux-bg); border-color: transparent; }
+    .tag.cat-circuit { color: var(--cat-circuit); background: var(--cat-circuit-bg); border-color: transparent; }
+    .tag.cat-other { color: var(--cat-other); background: var(--cat-other-bg); border-color: transparent; }
+
+    .home-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(300px, 4fr); gap: var(--space-4); align-items: start; }
+    .today-card {
+      position: relative;
+      overflow: hidden;
+      padding: var(--space-6);
+      border-color: var(--accent-line);
+      background-color: var(--surface);
+      background-image: linear-gradient(var(--accent-soft) 1px, transparent 1px), linear-gradient(90deg, var(--accent-soft) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .today-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, transparent, var(--surface) 82%); opacity: 0.7; }
+    .today-card > * { position: relative; z-index: 1; }
+    .side-stack { display: grid; gap: var(--space-4); }
+    .quick-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-4); }
+    .progress-track { height: 8px; overflow: hidden; border-radius: 99px; background: var(--surface-muted); }
+    .progress-fill { display: block; width: var(--progress, 0%); height: 100%; border-radius: inherit; background: var(--accent); transition: width var(--motion-standard) ease; }
+    .progress-summary { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+    .progress-value { color: var(--accent); font: 700 var(--text-xl)/1 var(--font-mono); }
+    .support-link { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); color: var(--text); text-decoration: none; }
+    .support-link:hover { color: var(--accent); }
+    .milestone-focus { border-inline-start: 3px solid var(--accent); }
+
+    .task-list { list-style: none; margin: 0; padding: 0; display: grid; }
+    .task-row { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--line); }
+    .task-row:last-child { border-bottom: 0; }
+    .task-row.is-done .task-title { color: var(--text-faint); text-decoration: line-through; }
+    .task-check { position: relative; width: 24px; height: 24px; }
+    .task-check input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+    .task-check span { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--line-strong); border-radius: var(--radius-field); background: var(--surface-raised); color: var(--accent-ink); }
+    .task-check input:checked + span { background: var(--accent); border-color: var(--accent); }
+    .task-check input:checked + span::after { content: ""; width: 9px; height: 5px; border-inline-start: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: rotate(-45deg) translateY(-1px); }
+    .task-check input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .task-main { min-width: 0; }
+    .task-title { display: block; font-size: var(--text-md); font-weight: 700; overflow-wrap: anywhere; }
+    .task-meta { margin-top: var(--space-2); display: flex; flex-wrap: wrap; gap: var(--space-1); }
+    .row-actions { display: flex; gap: var(--space-1); }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-5) 0 var(--space-3); }
+    .filter-cluster { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+    .filter-cluster .field { width: auto; min-width: 128px; }
+    .segmented { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-field); padding: 2px; background: var(--surface); }
+    .segmented button { min-height: 34px; border: 0; border-radius: 4px; background: transparent; color: var(--text-soft); padding: var(--space-1) var(--space-3); cursor: pointer; font-weight: 700; }
+    .segmented button.active { background: var(--accent-soft); color: var(--accent); }
+
+    .stage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: var(--space-4); align-items: start; }
+    .note-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: var(--space-4); align-items: start; }
+    .stage-card.current-stage { border-color: var(--accent-line); }
+    .stage-code { font-family: var(--font-mono); color: var(--accent); font-weight: 700; }
+    .stage-range { color: var(--text-faint); font-family: var(--font-mono); font-size: var(--text-xs); }
+    .stage-focus { margin: var(--space-4) 0; color: var(--text-soft); min-height: 44px; }
+    .range-controls { display: grid; grid-template-columns: 36px minmax(0, 1fr) 36px; gap: var(--space-2); align-items: center; margin: var(--space-4) 0; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .next-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--space-2); margin-top: var(--space-4); }
+    .next-form textarea.field { min-height: 64px; line-height: 1.45; resize: vertical; }
+    details.stage-details { border-top: 1px solid var(--line); margin-top: var(--space-4); padding-top: var(--space-3); }
+    details.stage-details summary { color: var(--text-soft); cursor: pointer; font-weight: 700; }
+    .stat-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-top: var(--space-3); }
+    .stat-cell { background: var(--surface-muted); border-radius: var(--radius-field); padding: var(--space-3); }
+    .stat-cell strong { display: block; font: 700 var(--text-xl)/1.2 var(--font-mono); color: var(--text); }
+    .stat-cell span { display: block; margin-top: var(--space-1); color: var(--text-soft); font-size: var(--text-xs); }
+
+    .note-card { display: grid; gap: var(--space-4); }
+    .note-content { margin: 0; white-space: pre-wrap; font-size: var(--text-md); line-height: 1.7; overflow-wrap: anywhere; }
+    .note-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); color: var(--text-faint); font-size: var(--text-xs); }
+
+    .milestone-list { position: relative; display: grid; gap: var(--space-3); padding-inline-start: var(--space-8); }
+    .milestone-list::before { content: ""; position: absolute; inset-block: var(--space-5); inset-inline-start: 11px; width: 1px; background: var(--line-strong); }
+    .milestone-card { position: relative; }
+    .milestone-card::before { content: ""; position: absolute; top: var(--space-5); left: -28px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line-strong); }
+    .milestone-card.passed::before, .milestone-card.target::before { border-color: var(--accent); background: var(--accent); }
+    .milestone-card.target { border-color: var(--accent-line); box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow-1); }
+    .milestone-code { font: 700 var(--text-xl)/1 var(--font-mono); }
+    .criteria { margin: var(--space-4) 0; color: var(--text-soft); font-size: var(--text-md); line-height: 1.7; }
+
+    .review-layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(320px, 4fr); gap: var(--space-4); align-items: start; }
+    .review-form { display: grid; gap: var(--space-4); }
+    .review-actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+    .review-history { display: grid; gap: var(--space-3); }
+    .review-section { margin-top: var(--space-3); }
+    .review-section strong { display: block; color: var(--text-faint); font-size: var(--text-xs); margin-bottom: var(--space-1); }
+    .review-section p { margin: 0; color: var(--text-soft); white-space: pre-wrap; overflow-wrap: anywhere; }
+    .view-description,
+    .card-description,
+    .task-title,
+    .stage-focus,
+    .note-content,
+    .criteria,
+    .review-section p,
+    .empty-state span {
+      text-wrap: pretty;
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .empty-state { min-height: 180px; border: 1px dashed var(--line-strong); border-radius: var(--radius-card); display: grid; place-items: center; text-align: center; padding: var(--space-8); color: var(--text-soft); background: var(--surface-raised); }
+    .empty-state .icon { margin: 0 auto var(--space-3); color: var(--accent); width: 24px; height: 24px; }
+    .empty-state strong { display: block; color: var(--text); font-size: var(--text-md); margin-bottom: var(--space-1); }
+    .toast {
+      position: fixed;
+      z-index: 90;
+      inset: auto var(--space-6) var(--space-6) auto;
+      max-width: min(360px, calc(100vw - 32px));
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-card);
+      background: var(--surface-raised);
+      color: var(--text);
+      box-shadow: var(--shadow-2);
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity var(--motion-standard) ease, transform var(--motion-standard) ease;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .icon-sun { display: none; }
+    [data-theme="dark"] .icon-sun { display: block; }
+    [data-theme="dark"] .icon-moon { display: none; }
+
+    @media (min-width: 1200px) {
+      body.sidebar-collapsed .app-shell { grid-template-columns: var(--sidebar-rail) minmax(0, 1fr); }
+      body.sidebar-collapsed .brand-copy,
+      body.sidebar-collapsed .nav-label,
+      body.sidebar-collapsed .tool-label,
+      body.sidebar-collapsed .local-note { display: none; }
+      body.sidebar-collapsed .brand,
+      body.sidebar-collapsed .nav-link,
+      body.sidebar-collapsed .tool-button,
+      body.sidebar-collapsed .tool-link { justify-content: center; padding-inline: var(--space-2); }
+    }
+    @media (max-width: 1199px) and (min-width: 768px) {
+      .app-shell { grid-template-columns: var(--sidebar-rail) minmax(0, 1fr); }
+      .brand-copy, .nav-label, .tool-label, .local-note, .collapse-button { display: none; }
+      .brand, .nav-link, .tool-button, .tool-link { justify-content: center; padding-inline: var(--space-2); }
+      .view { padding: var(--space-6); }
+      .review-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 900px) {
+      .home-grid { grid-template-columns: 1fr; }
+      .quick-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 767px) {
+      .app-shell { display: block; block-size: 100dvh; }
+      .sidebar { display: none; }
+      .workspace { block-size: 100dvh; padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+      .mobile-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-2) var(--space-4);
+        border-bottom: 1px solid var(--line);
+        background: var(--bg);
+      }
+      .mobile-brand { display: flex; align-items: center; gap: var(--space-2); min-width: 0; font-weight: 700; }
+      .mobile-brand .brand-mark { width: 32px; height: 32px; }
+      .mobile-brand span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .mobile-actions { display: flex; align-items: center; gap: var(--space-1); flex: none; }
+      .mobile-settings { position: relative; }
+      .mobile-settings summary { list-style: none; }
+      .mobile-settings summary::-webkit-details-marker { display: none; }
+      .mobile-settings[open] summary { color: var(--accent); background: var(--surface-muted); }
+      .mobile-settings-panel {
+        position: absolute;
+        z-index: 1;
+        inset-block-start: calc(100% + var(--space-2));
+        inset-inline-end: 0;
+        width: min(288px, calc(100vw - 2 * var(--space-4)));
+        display: grid;
+        gap: var(--space-1);
+        padding: var(--space-2);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        background: var(--surface-raised);
+        box-shadow: var(--shadow-2);
+      }
+      .mobile-settings-panel .local-note { margin: var(--space-1) 0 0; padding: var(--space-3); border-top: 1px solid var(--line); }
+      .mobile-bottom-nav {
+        position: fixed;
+        inset: auto 0 0 0;
+        z-index: 50;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        padding: var(--space-1) var(--space-1) max(var(--space-1), env(safe-area-inset-bottom));
+        border-top: 1px solid var(--line);
+        background: var(--sidebar);
+      }
+      .mobile-bottom-nav .nav-link { min-width: 0; min-height: 52px; padding: var(--space-1); gap: 2px; flex-direction: column; justify-content: center; border-radius: var(--radius-field); font-size: 10px; }
+      .mobile-bottom-nav .nav-link::before { display: none; }
+      .mobile-bottom-nav .icon { width: 19px; height: 19px; }
+      .mobile-bottom-nav .nav-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+      .view { padding: var(--space-5) var(--space-4); }
+      .view-header { align-items: flex-start; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-6); }
+      .view-title { font-size: 28px; }
+      .view-description { font-size: var(--text-sm); }
+      .view-context { justify-content: flex-start; }
+      .card, .today-card { padding: var(--space-4); }
+      .quick-form, .quick-form .grow, .quick-form .compact { width: 100%; flex-basis: 100%; }
+      .quick-form .button { width: 100%; }
+      .task-check { width: var(--touch); height: var(--touch); display: grid; place-items: center; }
+      .task-row { grid-template-columns: auto minmax(0, 1fr); }
+      .task-row .row-actions { grid-column: 2; justify-content: flex-end; }
+      .filter-cluster { width: 100%; }
+      .filter-cluster .field { flex: 1 1 120px; width: 100%; }
+      .segmented { width: 100%; }
+      .segmented button { flex: 1; }
+      .next-form { grid-template-columns: 1fr; }
+      .review-layout { grid-template-columns: 1fr; }
+      .review-actions { flex-direction: column-reverse; }
+      .review-actions .button { width: 100%; }
+      .button, .icon-button { min-height: var(--touch); }
+      .icon-button { width: var(--touch); min-width: var(--touch); height: var(--touch); }
+      .toast { inset: auto var(--space-4) calc(72px + env(safe-area-inset-bottom)) var(--space-4); }
+    }
+    @media (max-width: 420px) {
+      .mobile-bottom-nav .nav-label { font-size: 9px; }
+      .date-chip { white-space: normal; }
+      .stat-pair { grid-template-columns: 1fr; }
+      .milestone-list { padding-inline-start: var(--space-6); }
+      .milestone-card::before { left: -21px; }
+      .card-header { flex-direction: column; }
+      .card-header .row-actions { align-self: flex-end; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-view">跳到主要内容</a>
+
+  <svg class="sr-only" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></symbol>
+    <symbol id="i-tasks" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 10 2 2 4-4"/><path d="M14 11h3M7 16h10"/></symbol>
+    <symbol id="i-stages" viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></symbol>
+    <symbol id="i-notes" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M16 3v4h4M8 11h8M8 15h8"/></symbol>
+    <symbol id="i-milestone" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 5h12l-2 4 2 4H5"/></symbol>
+    <symbol id="i-review" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="m8 10 2 2 5-5M8 16h8"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z"/></symbol>
+    <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M14 9l-3 3 3 3"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-9 9"/><path d="M19 14v5H5V5h5"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 4v6h6"/><path d="M5.5 15a8 8 0 1 0 .5-7l-2 2"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="m4 16-1 5 5-1L19 9l-4-4Z"/><path d="m13 7 4 4"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 14h5l2 3h2l2-3h5"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="主导航">
+      <a class="brand" href="#/home" aria-label="嵌入式学习工作台首页">
+        <span class="brand-mark" aria-hidden="true"><svg class="icon icon-lg"><use href="#i-stages"></use></svg></span>
+        <span class="brand-copy"><strong>嵌入式学习工作台</strong><small>LEARN / BUILD / REVIEW</small></span>
+      </a>
+      <nav class="sidebar-nav">
+        <a class="nav-link" data-route="home" href="#/home"><svg class="icon"><use href="#i-home"></use></svg><span class="nav-label">首页</span></a>
+        <a class="nav-link" data-route="tasks" href="#/tasks"><svg class="icon"><use href="#i-tasks"></use></svg><span class="nav-label">今日任务</span></a>
+        <a class="nav-link" data-route="stages" href="#/stages"><svg class="icon"><use href="#i-stages"></use></svg><span class="nav-label">阶段进度</span></a>
+        <a class="nav-link" data-route="notes" href="#/notes"><svg class="icon"><use href="#i-notes"></use></svg><span class="nav-label">知识笔记</span></a>
+        <a class="nav-link" data-route="milestones" href="#/milestones"><svg class="icon"><use href="#i-milestone"></use></svg><span class="nav-label">里程碑</span></a>
+        <a class="nav-link" data-route="review" href="#/review"><svg class="icon"><use href="#i-review"></use></svg><span class="nav-label">每周复盘</span></a>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-tools">
+        <a class="tool-link" href="./嵌入式学习计划-v2.html" target="_blank" rel="noopener"><svg class="icon"><use href="#i-external"></use></svg><span class="tool-label">打开学习计划</span></a>
+        <button class="tool-button" type="button" data-action="toggle-theme"><svg class="icon icon-moon"><use href="#i-moon"></use></svg><svg class="icon icon-sun"><use href="#i-sun"></use></svg><span class="tool-label" data-theme-label>切换浅色</span></button>
+        <button class="tool-button" type="button" data-action="reset-data"><svg class="icon"><use href="#i-reset"></use></svg><span class="tool-label">重置示例数据</span></button>
+        <button class="tool-button danger" type="button" data-action="clear-data"><svg class="icon"><use href="#i-trash"></use></svg><span class="tool-label">清空全部数据</span></button>
+        <p class="local-note">刷新不会丢失，但数据只保存在当前浏览器，不能跨设备同步。</p>
+        <button class="tool-button collapse-button" type="button" data-action="toggle-sidebar" title="折叠侧栏" aria-label="折叠侧栏"><svg class="icon"><use href="#i-panel"></use></svg><span class="tool-label">折叠侧栏</span></button>
+      </div>
+    </aside>
+
+    <main class="workspace" id="main-view" tabindex="-1">
+      <header class="mobile-topbar">
+        <div class="mobile-brand"><span class="brand-mark" aria-hidden="true"><svg class="icon"><use href="#i-stages"></use></svg></span><span>嵌入式学习工作台</span></div>
+        <div class="mobile-actions">
+          <button class="button icon-button ghost" type="button" data-action="toggle-theme" aria-label="切换主题"><svg class="icon icon-moon"><use href="#i-moon"></use></svg><svg class="icon icon-sun"><use href="#i-sun"></use></svg></button>
+          <details class="mobile-settings">
+            <summary class="button icon-button ghost" aria-label="更多设置" title="更多设置"><svg class="icon"><use href="#i-more"></use></svg></summary>
+            <div class="mobile-settings-panel">
+              <a class="tool-link" href="./嵌入式学习计划-v2.html" target="_blank" rel="noopener"><svg class="icon"><use href="#i-external"></use></svg><span>打开学习计划</span></a>
+              <button class="tool-button" type="button" data-action="reset-data"><svg class="icon"><use href="#i-reset"></use></svg><span>重置示例数据</span></button>
+              <button class="tool-button danger" type="button" data-action="clear-data"><svg class="icon"><use href="#i-trash"></use></svg><span>清空全部数据</span></button>
+              <p class="local-note">刷新不会丢失，但数据只保存在当前浏览器，不能跨设备同步。</p>
+            </div>
+          </details>
+        </div>
+      </header>
+      <div class="view" id="view"></div>
+    </main>
+
+    <nav class="mobile-bottom-nav" aria-label="移动端主导航">
+      <a class="nav-link" data-route="home" href="#/home"><svg class="icon"><use href="#i-home"></use></svg><span class="nav-label">首页</span></a>
+      <a class="nav-link" data-route="tasks" href="#/tasks"><svg class="icon"><use href="#i-tasks"></use></svg><span class="nav-label">任务</span></a>
+      <a class="nav-link" data-route="stages" href="#/stages"><svg class="icon"><use href="#i-stages"></use></svg><span class="nav-label">进度</span></a>
+      <a class="nav-link" data-route="notes" href="#/notes"><svg class="icon"><use href="#i-notes"></use></svg><span class="nav-label">笔记</span></a>
+      <a class="nav-link" data-route="milestones" href="#/milestones"><svg class="icon"><use href="#i-milestone"></use></svg><span class="nav-label">里程碑</span></a>
+      <a class="nav-link" data-route="review" href="#/review"><svg class="icon"><use href="#i-review"></use></svg><span class="nav-label">复盘</span></a>
+    </nav>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const PREFIX = 'emb-wb:';
+      const ROUTES = ['home', 'tasks', 'stages', 'notes', 'milestones', 'review'];
+      const PHASES = ['P0', 'P1', 'P2', 'P3', 'P4'];
+      const CATEGORIES = ['C语言', 'STM32', 'RTOS', 'Linux', '电路', '其他'];
+      const PRIORITY_LABELS = { high: '高', medium: '中', low: '低' };
+
+      const store = Object.freeze({
+        get(name, fallback) {
+          try {
+            const raw = localStorage.getItem(PREFIX + name);
+            return raw === null ? fallback : JSON.parse(raw);
+          } catch (error) {
+            return fallback;
+          }
+        },
+        set(name, value) {
+          localStorage.setItem(PREFIX + name, JSON.stringify(value));
+          return value;
+        },
+        remove(name) {
+          localStorage.removeItem(PREFIX + name);
+        }
+      });
+
+      function localDate(date = new Date()) {
+        const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return local.toISOString().slice(0, 10);
+      }
+
+      function weekLabel(date = new Date()) {
+        const working = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const day = working.getUTCDay() || 7;
+        working.setUTCDate(working.getUTCDate() + 4 - day);
+        const yearStart = new Date(Date.UTC(working.getUTCFullYear(), 0, 1));
+        const week = Math.ceil((((working - yearStart) / 86400000) + 1) / 7);
+        return working.getUTCFullYear() + '-W' + String(week).padStart(2, '0');
+      }
+
+      function createStages(seeded) {
+        return [
+          { id: 'P0', name: '筑基', range: 'M1-M2 · 第1-10周', focus: 'C语言强化 + 数据结构 + 电路基础', progress: seeded ? 65 : 0, next: '完成指针与内存练习，手写单链表核心操作。' },
+          { id: 'P1', name: '单片机实战', range: 'M3-M7 · 第11-18周', focus: '51 快速过渡 → STM32 核心外设', progress: seeded ? 20 : 0, next: '从空工程完成 GPIO、中断与串口联调。' },
+          { id: 'P2', name: 'RTOS 工程化', range: 'M7-M9 · 第19-22周', focus: 'FreeRTOS + 嵌入式 C 规范', progress: 0, next: '建立任务、队列和同步机制的最小实验工程。' },
+          { id: 'P3', name: '嵌入式 Linux', range: 'M9-M15 · 第23-34周', focus: 'Linux 应用 → 驱动（按需）', progress: 0, next: '熟悉 Shell、进程、文件与 Socket 编程。' },
+          { id: 'P4', name: '工程拓展', range: 'M15-M18 · 第35-40周', focus: '综合项目 + 竞赛 + 求职', progress: 0, next: '定义综合项目指标并拆分迭代验收点。' }
+        ];
+      }
+
+      function createMilestones(seeded) {
+        return [
+          { id: 'M2', phase: 'P0', month: '第 2 月', passed: seeded, criteria: '不查资料能手写单链表增删查 + 快排；能讲清指针和数组的区别与联系' },
+          { id: 'M7', phase: 'P1', month: '第 7 月', passed: false, criteria: '不看例程从空工程配置时钟，定时器产生 1kHz PWM，串口打印 ADC 采样值' },
+          { id: 'M9', phase: 'P2', month: '第 9 月', passed: false, criteria: '用 FreeRTOS 实现 3 个任务通过队列通信的完整固件；能讲清信号量与互斥量区别' },
+          { id: 'M13', phase: 'P3', month: '第 13 月', passed: false, criteria: '在开发板上跑通自己编译的内核；实现跨进程 Socket 通信程序' },
+          { id: 'M18', phase: 'P4', month: '第 18 月', passed: false, criteria: '完成 PID 双闭环综合项目全部验收指标；能 10 分钟讲清 3 个项目的架构、难点、调试与数据' }
+        ];
+      }
+
+      function createSeed() {
+        const today = localDate();
+        const previousWeek = new Date();
+        previousWeek.setDate(previousWeek.getDate() - 7);
+        return {
+          tasks: [
+            { id: 'task-pointer', title: '指针与内存练习题 20 道', priority: 'high', phase: 'P0', done: false, createdAt: today },
+            { id: 'task-gpio', title: 'STM32 GPIO 与中断实验', priority: 'medium', phase: 'P1', done: false, createdAt: today },
+            { id: 'task-list', title: '整理链表与队列笔记', priority: 'low', phase: 'P0', done: false, createdAt: today },
+            { id: 'task-circuit', title: '复习上拉电阻与去耦电容', priority: 'medium', phase: 'P0', done: true, createdAt: today }
+          ],
+          stages: createStages(true),
+          notes: [
+            { id: 'note-pointer', category: 'C语言', phase: 'P0', content: '指针加一移动的是所指类型的字节数，不一定是一个字节。检查数组越界时要同时看元素个数和指针类型。', createdAt: new Date().toISOString() },
+            { id: 'note-pwm', category: 'STM32', phase: 'P1', content: 'PWM 实验：固定计数周期后，占空比由比较值决定。改频率时要同时核对时钟源、预分频和自动重装值。', createdAt: new Date(Date.now() - 3600000).toISOString() },
+            { id: 'note-circuit', category: '电路', phase: 'P0', content: '按键输入悬空会产生随机电平；内部上下拉能稳定默认状态，长线仍需关注干扰与硬件滤波。', createdAt: new Date(Date.now() - 86400000).toISOString() }
+          ],
+          milestones: createMilestones(true),
+          reviews: [
+            { id: 'review-sample', week: weekLabel(previousWeek), completed: '完成了 C 指针专题练习，并把链表插入和删除各手写两遍。', blocked: '动态内存释放顺序还不稳定，调试时容易忽略悬空指针。', improve: '下周用 AddressSanitizer 复查三个小程序，再开始队列练习。', createdAt: previousWeek.toISOString() }
+          ]
+        };
+      }
+
+      function createEmptyData() {
+        return { tasks: [], stages: createStages(false), notes: [], milestones: createMilestones(false), reviews: [] };
+      }
+
+      function validData(value) {
+        return value && ['tasks', 'stages', 'notes', 'milestones', 'reviews'].every((key) => Array.isArray(value[key]));
+      }
+
+      let state = store.get('data', null);
+      if (!validData(state)) {
+        state = createSeed();
+        store.set('data', state);
+      }
+
+      const ui = {
+        taskMode: 'open',
+        taskPhase: 'all',
+        taskPriority: 'all',
+        noteCategory: 'all',
+        editingReview: null
+      };
+      let toastTimer = null;
+
+      function persist() {
+        store.set('data', state);
+      }
+
+      function id(prefix) {
+        return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+      }
+
+      function escapeHTML(value) {
+        return String(value)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      const PROTECTED_PROSE_TERMS = Object.freeze([
+        '队列通信', '悬空指针', '比较值', '预分频', '不一定', '采样值', '定时器',
+        '复盘', '清晰', '产生', '字节', '数组'
+      ]);
+      const PROSE_SELECTOR = '.view-description, .card-description, .task-title, .stage-focus, .note-content, .criteria, .review-section p, .empty-state span';
+
+      function preserveProsePhrases(text) {
+        return PROTECTED_PROSE_TERMS.reduce((result, term) => (
+          result.replaceAll(term, Array.from(term).join('\u2060'))
+        ), text);
+      }
+
+      function formatRenderedProse(root) {
+        root.querySelectorAll(PROSE_SELECTOR).forEach((element) => {
+          const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+          while (walker.nextNode()) {
+            walker.currentNode.nodeValue = preserveProsePhrases(walker.currentNode.nodeValue);
+          }
+        });
+      }
+
+      function icon(name, extraClass = '') {
+        return '<svg class="icon ' + extraClass + '" aria-hidden="true"><use href="#i-' + name + '"></use></svg>';
+      }
+
+      function phaseForCategory(category) {
+        return { 'C语言': 'P0', '电路': 'P0', 'STM32': 'P1', 'RTOS': 'P2', 'Linux': 'P3', '其他': 'P4' }[category] || 'P4';
+      }
+
+      function categoryClass(category) {
+        return { 'C语言': 'cat-c', 'STM32': 'cat-stm32', 'RTOS': 'cat-rtos', 'Linux': 'cat-linux', '电路': 'cat-circuit', '其他': 'cat-other' }[category] || 'cat-other';
+      }
+
+      function formatDateTime(value) {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? '' : new Intl.DateTimeFormat('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date);
+      }
+
+      function displayDate() {
+        return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
+      }
+
+      function requestedRoute() {
+        return location.hash.replace(/^#\/?/, '').split('/')[0];
+      }
+
+      function route() {
+        const key = requestedRoute();
+        return ROUTES.includes(key) ? key : 'home';
+      }
+
+      function intro(kicker, title, description, context = '') {
+        return '<header class="view-header">' +
+          '<div class="view-heading"><p class="view-kicker">' + escapeHTML(kicker) + '</p><h1 class="view-title" id="view-title">' + escapeHTML(title) + '</h1><p class="view-description">' + escapeHTML(description) + '</p></div>' +
+          '<div class="view-context">' + context + '</div></header>';
+      }
+
+      function emptyState(title, hint, iconName) {
+        return '<div class="empty-state">' + icon(iconName) + '<div><strong>' + escapeHTML(title) + '</strong><span>' + escapeHTML(hint) + '</span></div></div>';
+      }
+
+      function phaseOptions(selected, allLabel) {
+        const all = allLabel ? '<option value="all"' + (selected === 'all' ? ' selected' : '') + '>' + escapeHTML(allLabel) + '</option>' : '';
+        return all + PHASES.map((phase) => '<option value="' + phase + '"' + (selected === phase ? ' selected' : '') + '>' + phase + '</option>').join('');
+      }
+
+      function categoryOptions(selected, allLabel) {
+        const all = allLabel ? '<option value="all"' + (selected === 'all' ? ' selected' : '') + '>' + escapeHTML(allLabel) + '</option>' : '';
+        return all + CATEGORIES.map((category) => '<option value="' + escapeHTML(category) + '"' + (selected === category ? ' selected' : '') + '>' + escapeHTML(category) + '</option>').join('');
+      }
+
+      function taskRow(task, compact) {
+        const title = escapeHTML(task.title);
+        const actions = compact ? '' : '<div class="row-actions"><button class="button icon-button ghost" type="button" data-action="edit-task" data-id="' + task.id + '" aria-label="编辑任务" title="编辑">' + icon('edit') + '</button><button class="button icon-button ghost danger" type="button" data-action="delete-task" data-id="' + task.id + '" aria-label="删除任务" title="删除">' + icon('trash') + '</button></div>';
+        return '<li class="task-row' + (task.done ? ' is-done' : '') + '">' +
+          '<label class="task-check"><input type="checkbox" data-action="toggle-task" data-id="' + task.id + '" aria-label="标记任务：' + title + '"' + (task.done ? ' checked' : '') + '><span aria-hidden="true"></span></label>' +
+          '<div class="task-main"><span class="task-title">' + title + '</span><div class="task-meta"><span class="tag phase">' + escapeHTML(task.phase) + '</span><span class="tag ' + task.priority + '">' + PRIORITY_LABELS[task.priority] + '优先级</span></div></div>' + actions + '</li>';
+      }
+
+      function currentStage() {
+        return state.stages.find((stage) => stage.progress < 100) || state.stages[state.stages.length - 1];
+      }
+
+      function renderHome() {
+        const openTasks = state.tasks.filter((task) => !task.done);
+        const overall = state.stages.length ? Math.round(state.stages.reduce((sum, stage) => sum + stage.progress, 0) / state.stages.length) : 0;
+        const stage = currentStage();
+        const target = state.milestones.find((milestone) => !milestone.passed);
+        const taskList = openTasks.length ? '<ul class="task-list">' + openTasks.slice(0, 6).map((task) => taskRow(task, true)).join('') + '</ul>' : emptyState('今天还没有任务', '从上方添加第一条吧。', 'tasks');
+        const targetCard = target ? '<article class="card milestone-focus"><div class="card-header"><div><p class="view-kicker">下一个里程碑</p><h2 class="card-title">' + escapeHTML(target.id) + ' 自测</h2></div><span class="tag phase">' + escapeHTML(target.phase) + '</span></div><p class="card-description">' + escapeHTML(target.criteria.split('；')[0]) + '</p><a class="support-link" href="#/milestones"><strong>查看验收标准</strong>' + icon('arrow') + '</a></article>' : '<article class="card"><h2 class="card-title">里程碑全部通过</h2><p class="card-description">继续维护项目记录，并准备一次完整项目讲解。</p></article>';
+        return '<div class="view-inner">' +
+          intro('今日行动', '把今天推进一小步', '围绕当前阶段安排任务，完成后同步更新进度与复盘。', '<span class="date-chip">' + escapeHTML(displayDate()) + '</span><a class="button ghost" href="./嵌入式学习计划-v2.html" target="_blank" rel="noopener">' + icon('external') + '学习路线</a>') +
+          '<div class="home-grid"><section class="card today-card" aria-labelledby="today-title"><div class="card-header"><div><h2 class="section-title" id="today-title">今日任务</h2><p class="card-description">' + openTasks.length + ' 项待推进</p></div><a class="button small ghost" href="#/tasks">管理任务' + icon('arrow') + '</a></div><form class="quick-form" data-form="home-task"><label class="sr-only" for="home-task-title">新增今日任务</label><input class="field grow" id="home-task-title" name="title" required maxlength="100" placeholder="输入任务标题，按回车添加"><button class="button primary" type="submit">' + icon('plus') + '添加任务</button></form><div style="margin-top:var(--space-4)">' + taskList + '</div></section>' +
+          '<div class="side-stack"><article class="card"><div class="progress-summary"><div><p class="view-kicker">五阶段总进度</p><h2 class="card-title">当前：' + escapeHTML(stage ? stage.id + ' ' + stage.name : '尚未开始') + '</h2></div><span class="progress-value">' + overall + '%</span></div><div class="progress-track" role="progressbar" aria-label="五阶段整体进度" aria-valuenow="' + overall + '" aria-valuemin="0" aria-valuemax="100"><span class="progress-fill" style="--progress:' + overall + '%"></span></div><div style="margin-top:var(--space-4)"><a class="support-link" href="#/stages"><span>更新阶段进度</span>' + icon('arrow') + '</a></div></article>' + targetCard + '</div></div>' +
+          '<div class="quick-grid"><section class="card"><div class="card-header"><div><h2 class="card-title">快速记笔记</h2><p class="card-description">先记结论，稍后再整理。</p></div></div><form class="quick-form" data-form="home-note"><label class="sr-only" for="home-note">笔记内容</label><input class="field grow" id="home-note" name="content" required maxlength="500" placeholder="记录一个易错点或实验现象"><button class="button primary" type="submit">' + icon('plus') + '保存</button></form></section><a class="card support-link" href="#/review"><div><p class="view-kicker">每周复盘</p><h2 class="card-title">把经验变成下周的行动</h2><p class="card-description">记录完成、阻塞与改进。</p></div>' + icon('arrow', 'icon-lg') + '</a></div></div>';
+      }
+
+      function renderTasks() {
+        const filtered = state.tasks.filter((task) => {
+          const modeMatch = ui.taskMode === 'all' || !task.done;
+          const phaseMatch = ui.taskPhase === 'all' || task.phase === ui.taskPhase;
+          const priorityMatch = ui.taskPriority === 'all' || task.priority === ui.taskPriority;
+          return modeMatch && phaseMatch && priorityMatch;
+        });
+        const list = filtered.length ? '<ul class="task-list">' + filtered.map((task) => taskRow(task, false)).join('') + '</ul>' : emptyState('没有符合条件的任务', '调整筛选，或从上方添加一项新任务。', 'tasks');
+        return '<div class="view-inner">' + intro('执行清单', '今日任务', '按优先级和阶段拆分学习动作，勾选结果会同步到首页。', '<span class="date-chip">' + state.tasks.filter((task) => !task.done).length + ' 项未完成</span>') +
+          '<section class="card"><form class="quick-form" data-form="task"><label class="sr-only" for="task-title">任务标题</label><input class="field grow" id="task-title" name="title" required maxlength="100" placeholder="输入任务标题，按回车添加"><label class="sr-only" for="task-priority">优先级</label><select class="field compact" id="task-priority" name="priority"><option value="high">高优先级</option><option value="medium" selected>中优先级</option><option value="low">低优先级</option></select><label class="sr-only" for="task-phase">所属阶段</label><select class="field compact" id="task-phase" name="phase">' + phaseOptions(currentStage()?.id || 'P0') + '</select><button class="button primary" type="submit">' + icon('plus') + '添加任务</button></form>' +
+          '<div class="toolbar"><div class="segmented" aria-label="任务范围"><button type="button" data-action="task-mode" data-mode="open" class="' + (ui.taskMode === 'open' ? 'active' : '') + '">今日未完成</button><button type="button" data-action="task-mode" data-mode="all" class="' + (ui.taskMode === 'all' ? 'active' : '') + '">全部</button></div><div class="filter-cluster"><label class="sr-only" for="task-phase-filter">按阶段筛选</label><select class="field" id="task-phase-filter" data-filter="task-phase">' + phaseOptions(ui.taskPhase, '全部阶段') + '</select><label class="sr-only" for="task-priority-filter">按优先级筛选</label><select class="field" id="task-priority-filter" data-filter="task-priority"><option value="all">全部优先级</option><option value="high"' + (ui.taskPriority === 'high' ? ' selected' : '') + '>高优先级</option><option value="medium"' + (ui.taskPriority === 'medium' ? ' selected' : '') + '>中优先级</option><option value="low"' + (ui.taskPriority === 'low' ? ' selected' : '') + '>低优先级</option></select></div></div>' + list + '</section></div>';
+      }
+
+      function renderStages() {
+        const current = currentStage();
+        const cards = state.stages.map((stage) => {
+          const tasks = state.tasks.filter((task) => task.phase === stage.id);
+          const notes = state.notes.filter((note) => note.phase === stage.id);
+          const completeTasks = tasks.filter((task) => task.done).length;
+          return '<article class="card stage-card' + (current && current.id === stage.id ? ' current-stage' : '') + '"><div class="card-header"><div><div class="meta-row"><span class="stage-code">' + stage.id + '</span>' + (current && current.id === stage.id ? '<span class="tag current">当前阶段</span>' : '') + '</div><h2 class="card-title">' + escapeHTML(stage.name) + '</h2><span class="stage-range">' + escapeHTML(stage.range) + '</span></div><span class="progress-value">' + stage.progress + '%</span></div><p class="stage-focus">' + escapeHTML(stage.focus) + '</p><div class="progress-track" role="progressbar" aria-label="' + escapeHTML(stage.name) + '进度" aria-valuenow="' + stage.progress + '" aria-valuemin="0" aria-valuemax="100"><span class="progress-fill" style="--progress:' + stage.progress + '%"></span></div><div class="range-controls"><button class="button icon-button ghost" type="button" data-action="adjust-stage" data-id="' + stage.id + '" data-delta="-10" aria-label="进度减 10%">' + icon('minus') + '</button><label class="sr-only" for="range-' + stage.id + '">调整 ' + escapeHTML(stage.name) + ' 进度</label><input id="range-' + stage.id + '" type="range" min="0" max="100" step="5" value="' + stage.progress + '" data-stage-range="' + stage.id + '"><button class="button icon-button ghost" type="button" data-action="adjust-stage" data-id="' + stage.id + '" data-delta="10" aria-label="进度加 10%">' + icon('plus') + '</button></div><form class="next-form" data-form="stage-next" data-id="' + stage.id + '"><label class="sr-only" for="next-' + stage.id + '">下一步行动</label><textarea class="field" id="next-' + stage.id + '" name="next" maxlength="160" rows="2">' + escapeHTML(stage.next) + '</textarea><button class="button" type="submit">保存下一步</button></form><details class="stage-details"><summary>查看关联记录</summary><div class="stat-pair"><div class="stat-cell"><strong>' + completeTasks + '/' + tasks.length + '</strong><span>已完成任务 / 全部任务</span></div><div class="stat-cell"><strong>' + notes.length + '</strong><span>关联知识笔记</span></div></div></details></article>';
+        }).join('');
+        return '<div class="view-inner">' + intro('路线推进', '阶段进度', '手动校准 P0-P4 的完成度，并为每个阶段保留一个清晰的下一步。', '<span class="date-chip">5 个阶段</span>') + '<section class="stage-grid">' + cards + '</section></div>';
+      }
+
+      function renderNotes() {
+        const notes = state.notes.filter((note) => ui.noteCategory === 'all' || note.category === ui.noteCategory);
+        const cards = notes.length ? '<div class="note-grid">' + notes.map((note) => '<article class="card note-card"><div class="card-header"><div class="meta-row"><span class="tag ' + categoryClass(note.category) + '">' + escapeHTML(note.category) + '</span><span class="tag phase">' + escapeHTML(note.phase) + '</span></div><div class="row-actions"><button class="button icon-button ghost" type="button" data-action="edit-note" data-id="' + note.id + '" aria-label="编辑笔记" title="编辑">' + icon('edit') + '</button><button class="button icon-button ghost danger" type="button" data-action="delete-note" data-id="' + note.id + '" aria-label="删除笔记" title="删除">' + icon('trash') + '</button></div></div><p class="note-content">' + escapeHTML(note.content) + '</p><footer class="note-footer"><span>' + escapeHTML(formatDateTime(note.createdAt)) + '</span></footer></article>').join('') + '</div>' : emptyState('这个分类还没有笔记', '从上方快速记录一个结论、现象或易错点。', 'notes');
+        return '<div class="view-inner">' + intro('随手记录', '知识笔记', '先捕捉关键结论，再按技术主题筛选与整理。', '<span class="date-chip">' + state.notes.length + ' 条记录</span>') + '<section class="card" style="margin-bottom:var(--space-4)"><form class="quick-form" data-form="note"><label class="sr-only" for="note-category">笔记分类</label><select class="field compact" id="note-category" name="category">' + categoryOptions('C语言') + '</select><label class="sr-only" for="note-content">笔记内容</label><input class="field grow" id="note-content" name="content" required maxlength="500" placeholder="记录结论、实验现象或易错点，按回车保存"><button class="button primary" type="submit">' + icon('plus') + '保存笔记</button></form><div class="toolbar" style="margin-bottom:0"><div class="filter-cluster"><label class="sr-only" for="note-filter">按分类筛选</label><select class="field" id="note-filter" data-filter="note-category">' + categoryOptions(ui.noteCategory, '全部分类') + '</select></div></div></section>' + cards + '</div>';
+      }
+
+      function renderMilestones() {
+        const target = state.milestones.find((milestone) => !milestone.passed);
+        const cards = state.milestones.length ? '<div class="milestone-list">' + state.milestones.map((milestone) => {
+          const isTarget = target && target.id === milestone.id;
+          return '<article class="card milestone-card' + (milestone.passed ? ' passed' : '') + (isTarget ? ' target' : '') + '"><div class="card-header"><div><div class="meta-row"><span class="milestone-code">' + escapeHTML(milestone.id) + '</span><span class="tag phase">' + escapeHTML(milestone.phase) + '</span><span class="tag">' + escapeHTML(milestone.month) + '</span>' + (isTarget ? '<span class="tag current">当前目标</span>' : '') + '</div></div><span class="tag ' + (milestone.passed ? 'passed' : '') + '">' + (milestone.passed ? '已通过' : '未通过') + '</span></div><p class="criteria">' + escapeHTML(milestone.criteria) + '</p><button class="button ' + (milestone.passed ? 'ghost' : 'primary') + '" type="button" data-action="toggle-milestone" data-id="' + milestone.id + '">' + icon(milestone.passed ? 'reset' : 'check') + (milestone.passed ? '标记未通过' : '标记已通过') + '</button></article>';
+        }).join('') + '</div>' : emptyState('暂无里程碑', '重置示例数据可恢复路线检查点。', 'milestone');
+        return '<div class="view-inner">' + intro('检查点', '里程碑自测', '只有满足验收标准才标记通过，最近的未通过项始终是当前目标。', '<span class="date-chip">' + state.milestones.filter((item) => item.passed).length + '/' + state.milestones.length + ' 已通过</span>') + cards + '</div>';
+      }
+
+      function renderReview() {
+        const editing = state.reviews.find((review) => review.id === ui.editingReview);
+        const history = state.reviews.length ? '<div class="review-history">' + state.reviews.map((review) => '<article class="card"><div class="card-header"><div><p class="view-kicker">' + escapeHTML(review.week) + '</p><h2 class="card-title">周复盘记录</h2></div><div class="row-actions"><button class="button icon-button ghost" type="button" data-action="edit-review" data-id="' + review.id + '" aria-label="编辑复盘" title="编辑">' + icon('edit') + '</button><button class="button icon-button ghost danger" type="button" data-action="delete-review" data-id="' + review.id + '" aria-label="删除复盘" title="删除">' + icon('trash') + '</button></div></div><div class="review-section"><strong>本周完成了什么？</strong><p>' + escapeHTML(review.completed) + '</p></div><div class="review-section"><strong>卡在哪里？</strong><p>' + escapeHTML(review.blocked) + '</p></div><div class="review-section"><strong>下周怎么改？</strong><p>' + escapeHTML(review.improve) + '</p></div></article>').join('') + '</div>' : emptyState('还没有复盘记录', '填写左侧三个问题，保存第一条本周复盘。', 'review');
+        return '<div class="view-inner">' + intro('周度校准', '每周复盘', '用完成、阻塞、改进三个问题，把学习经历转成下一周的行动。', '<span class="date-chip">' + escapeHTML(weekLabel()) + '</span>') + '<div class="review-layout"><section class="card"><div class="card-header"><div><h2 class="card-title">' + (editing ? '编辑历史复盘' : '填写本周复盘') + '</h2><p class="card-description">' + escapeHTML(editing ? editing.week : weekLabel()) + '</p></div></div><form class="review-form" data-form="review"><label class="form-label" for="review-completed">本周完成了什么？<textarea class="field" id="review-completed" name="completed" required maxlength="1000" placeholder="写下完成的任务、实验或理解">' + escapeHTML(editing?.completed || '') + '</textarea></label><label class="form-label" for="review-blocked">卡在哪里？<textarea class="field" id="review-blocked" name="blocked" required maxlength="1000" placeholder="记录最具体的阻塞点">' + escapeHTML(editing?.blocked || '') + '</textarea></label><label class="form-label" for="review-improve">下周怎么改？<textarea class="field" id="review-improve" name="improve" required maxlength="1000" placeholder="给出一个可执行的调整">' + escapeHTML(editing?.improve || '') + '</textarea></label><div class="review-actions">' + (editing ? '<button class="button ghost" type="button" data-action="cancel-review">取消编辑</button>' : '') + '<button class="button primary" type="submit">' + icon('check') + (editing ? '保存修改' : '保存复盘') + '</button></div></form></section><section><h2 class="section-title">历史记录</h2>' + history + '</section></div></div>';
+      }
+
+      const renderers = { home: renderHome, tasks: renderTasks, stages: renderStages, notes: renderNotes, milestones: renderMilestones, review: renderReview };
+      const pageNames = { home: '首页', tasks: '今日任务', stages: '阶段进度', notes: '知识笔记', milestones: '里程碑', review: '每周复盘' };
+
+      function render() {
+        const currentRoute = route();
+        const view = document.getElementById('view');
+        view.innerHTML = renderers[currentRoute]();
+        formatRenderedProse(view);
+        document.querySelectorAll('[data-route]').forEach((link) => {
+          if (link.dataset.route === currentRoute) link.setAttribute('aria-current', 'page');
+          else link.removeAttribute('aria-current');
+        });
+        document.title = pageNames[currentRoute] + ' | 嵌入式学习工作台';
+      }
+
+      function notify(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+      }
+
+      function addTask(title, priority, phase) {
+        state.tasks.unshift({ id: id('task'), title: title.trim(), priority, phase, done: false, createdAt: localDate() });
+        persist();
+      }
+
+      function addNote(content, category) {
+        state.notes.unshift({ id: id('note'), category, phase: phaseForCategory(category), content: content.trim(), createdAt: new Date().toISOString() });
+        persist();
+      }
+
+      function syncTheme() {
+        const theme = document.documentElement.dataset.theme;
+        document.querySelectorAll('[data-theme-label]').forEach((label) => { label.textContent = theme === 'dark' ? '切换浅色' : '切换深色'; });
+        document.querySelectorAll('[data-action="toggle-theme"]').forEach((button) => button.setAttribute('aria-label', theme === 'dark' ? '切换浅色主题' : '切换深色主题'));
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#14161a' : '#f5f4ef');
+      }
+
+      document.addEventListener('submit', (event) => {
+        const form = event.target.closest('[data-form]');
+        if (!form) return;
+        event.preventDefault();
+        const values = new FormData(form);
+        if (form.dataset.form === 'home-task') {
+          addTask(values.get('title'), 'medium', currentStage()?.id || 'P0');
+          notify('任务已添加');
+        }
+        if (form.dataset.form === 'task') {
+          addTask(values.get('title'), values.get('priority'), values.get('phase'));
+          notify('任务已添加');
+        }
+        if (form.dataset.form === 'home-note') {
+          addNote(values.get('content'), '其他');
+          notify('笔记已保存');
+        }
+        if (form.dataset.form === 'note') {
+          addNote(values.get('content'), values.get('category'));
+          notify('笔记已保存');
+        }
+        if (form.dataset.form === 'stage-next') {
+          const stage = state.stages.find((item) => item.id === form.dataset.id);
+          if (stage) {
+            stage.next = String(values.get('next')).trim();
+            persist();
+            notify('下一步行动已更新');
+          }
+        }
+        if (form.dataset.form === 'review') {
+          const review = {
+            id: ui.editingReview || id('review'),
+            week: ui.editingReview ? state.reviews.find((item) => item.id === ui.editingReview).week : weekLabel(),
+            completed: String(values.get('completed')).trim(),
+            blocked: String(values.get('blocked')).trim(),
+            improve: String(values.get('improve')).trim(),
+            createdAt: new Date().toISOString()
+          };
+          if (ui.editingReview) state.reviews = state.reviews.map((item) => item.id === ui.editingReview ? review : item);
+          else state.reviews.unshift(review);
+          ui.editingReview = null;
+          persist();
+          notify('复盘已保存');
+        }
+        form.reset();
+        render();
+      });
+
+      document.addEventListener('change', (event) => {
+        const target = event.target;
+        if (target.matches('[data-action="toggle-task"]')) {
+          const task = state.tasks.find((item) => item.id === target.dataset.id);
+          if (task) {
+            task.done = target.checked;
+            persist();
+            notify(task.done ? '任务已完成' : '任务已恢复');
+            render();
+          }
+        }
+        if (target.matches('[data-filter="task-phase"]')) { ui.taskPhase = target.value; render(); }
+        if (target.matches('[data-filter="task-priority"]')) { ui.taskPriority = target.value; render(); }
+        if (target.matches('[data-filter="note-category"]')) { ui.noteCategory = target.value; render(); }
+        if (target.matches('[data-stage-range]')) {
+          const stage = state.stages.find((item) => item.id === target.dataset.stageRange);
+          if (stage) {
+            stage.progress = Number(target.value);
+            persist();
+            notify(stage.id + ' 进度已更新');
+            render();
+          }
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        const control = event.target.closest('[data-action]');
+        if (!control) return;
+        const action = control.dataset.action;
+        if (action === 'toggle-theme') {
+          const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.dataset.theme = next;
+          store.set('theme', next);
+          syncTheme();
+          notify(next === 'dark' ? '已切换深色主题' : '已切换浅色主题');
+        }
+        if (action === 'toggle-sidebar') {
+          const collapsed = !document.body.classList.contains('sidebar-collapsed');
+          document.body.classList.toggle('sidebar-collapsed', collapsed);
+          store.set('sidebar-collapsed', collapsed);
+          control.setAttribute('aria-label', collapsed ? '展开侧栏' : '折叠侧栏');
+          control.title = collapsed ? '展开侧栏' : '折叠侧栏';
+        }
+        if (action === 'task-mode') { ui.taskMode = control.dataset.mode; render(); }
+        if (action === 'edit-task') {
+          const task = state.tasks.find((item) => item.id === control.dataset.id);
+          if (task) {
+            const title = window.prompt('编辑任务标题', task.title);
+            if (!title || !title.trim()) return;
+            const priority = window.prompt('编辑优先级：high / medium / low', task.priority);
+            if (!Object.hasOwn(PRIORITY_LABELS, priority)) return;
+            const phase = window.prompt('编辑所属阶段：P0 / P1 / P2 / P3 / P4', task.phase);
+            if (!PHASES.includes(phase)) return;
+            task.title = title.trim();
+            task.priority = priority;
+            task.phase = phase;
+            persist();
+            render();
+            notify('任务已更新');
+          }
+        }
+        if (action === 'delete-task') {
+          const task = state.tasks.find((item) => item.id === control.dataset.id);
+          if (task && window.confirm('删除任务“' + task.title + '”？')) { state.tasks = state.tasks.filter((item) => item.id !== task.id); persist(); render(); notify('任务已删除'); }
+        }
+        if (action === 'adjust-stage') {
+          const stage = state.stages.find((item) => item.id === control.dataset.id);
+          if (stage) { stage.progress = Math.max(0, Math.min(100, stage.progress + Number(control.dataset.delta))); persist(); render(); notify(stage.id + ' 进度已更新'); }
+        }
+        if (action === 'edit-note') {
+          const note = state.notes.find((item) => item.id === control.dataset.id);
+          if (note) {
+            const content = window.prompt('编辑笔记内容', note.content);
+            if (!content || !content.trim()) return;
+            const category = window.prompt('编辑分类：C语言 / STM32 / RTOS / Linux / 电路 / 其他', note.category);
+            if (!CATEGORIES.includes(category)) return;
+            note.content = content.trim();
+            note.category = category;
+            note.phase = phaseForCategory(category);
+            note.createdAt = new Date().toISOString();
+            persist();
+            render();
+            notify('笔记已更新');
+          }
+        }
+        if (action === 'delete-note') {
+          if (window.confirm('删除这条笔记？')) { state.notes = state.notes.filter((item) => item.id !== control.dataset.id); persist(); render(); notify('笔记已删除'); }
+        }
+        if (action === 'toggle-milestone') {
+          const milestone = state.milestones.find((item) => item.id === control.dataset.id);
+          if (milestone) { milestone.passed = !milestone.passed; persist(); render(); notify(milestone.passed ? milestone.id + ' 已通过' : milestone.id + ' 已恢复为未通过'); }
+        }
+        if (action === 'edit-review') { ui.editingReview = control.dataset.id; render(); document.querySelector('.workspace').scrollTo({ top: 0, behavior: 'smooth' }); }
+        if (action === 'cancel-review') { ui.editingReview = null; render(); }
+        if (action === 'delete-review') {
+          if (window.confirm('删除这条复盘记录？')) { state.reviews = state.reviews.filter((item) => item.id !== control.dataset.id); if (ui.editingReview === control.dataset.id) ui.editingReview = null; persist(); render(); notify('复盘已删除'); }
+        }
+        if (action === 'reset-data' && window.confirm('用初始示例数据覆盖当前工作台数据？')) {
+          state = createSeed();
+          persist();
+          ui.editingReview = null;
+          render();
+          notify('示例数据已重置');
+        }
+        if (action === 'clear-data' && window.confirm('清空任务、笔记、进度、里程碑状态和复盘记录？')) {
+          state = createEmptyData();
+          persist();
+          ui.editingReview = null;
+          render();
+          notify('工作台数据已清空');
+        }
+      });
+
+      window.addEventListener('hashchange', () => {
+        render();
+        document.querySelector('.workspace').scrollTop = 0;
+      });
+      if (!ROUTES.includes(requestedRoute())) history.replaceState(null, '', '#/home');
+      document.body.classList.toggle('sidebar-collapsed', store.get('sidebar-collapsed', false) === true);
+      syncTheme();
+      render();
+    }());
+  </script>
+</body>
+</html>
