@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="面向自动化专业本科生的嵌入式软件工程师系统学习计划：C语言、STM32、FreeRTOS、嵌入式Linux、竞赛项目与就业准备，12–18个月可落地的学习路径。">
+<meta name="theme-color" content="#f7f6f3">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%230d7a5f'/%3E%3Cpath%20d='M6%2020h5v-7h5v4h5V8h5'%20fill='none'%20stroke='%23fff'%20stroke-width='2.5'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>嵌入式学习计划 · 自动化专业（12–18 个月路线）</title>
+<script>
+/* 主题预初始化：避免深色模式加载时闪烁 */
+(function(){
+  var t = null;
+  try { t = localStorage.getItem('embedded-plan-theme'); } catch(e){}
+  if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<style>
+/* ============================================================
+   设计令牌 · 浅色 / 深色双主题
+   ============================================================ */
+:root{
+  color-scheme:light;
+  --accent:#0d7a5f;
+  --accent-strong:#0a654f;
+  --accent-contrast:#ffffff;
+  --accent-soft:rgba(13,122,95,.10);
+  --accent-line:rgba(13,122,95,.28);
+  --bg:#f7f6f3;
+  --surface:#ffffff;
+  --surface2:#f0eee9;
+  --ink:#24292f;
+  --ink2:#5f666d;
+  --ink3:#98a0a6;
+  --line:#e6e3db;
+  --hairline:rgba(20,24,28,.08);
+  --shadow:0 1px 2px rgba(20,24,28,.05),0 8px 24px -12px rgba(20,24,28,.12);
+  --radius:14px;
+  --topbar-h:58px;
+  --sidebar-w:264px;
+  --mono:'Cascadia Code','JetBrains Mono',Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans SC',sans-serif;
+}
+[data-theme="dark"]{
+  color-scheme:dark;
+  --accent:#34d399;
+  --accent-strong:#6ee7b7;
+  --accent-contrast:#0b1512;
+  --accent-soft:rgba(52,211,153,.13);
+  --accent-line:rgba(52,211,153,.32);
+  --bg:#14161a;
+  --surface:#1c1f24;
+  --surface2:#23262c;
+  --ink:#e7e9ec;
+  --ink2:#9aa1a9;
+  --ink3:#6b7280;
+  --line:#2c3036;
+  --hairline:rgba(255,255,255,.09);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px -12px rgba(0,0,0,.5);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--topbar-h) + 14px)}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.7;-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
+::selection{background:var(--accent-soft)}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0}
+.skip-link{position:fixed;left:-9999px;top:8px;background:var(--accent);color:var(--accent-contrast);padding:8px 16px;border-radius:8px;z-index:300;font-weight:600;font-size:14px;text-decoration:none}
+.skip-link:focus{left:8px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible,li:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+code{font-family:var(--mono);font-size:.86em;background:var(--surface2);border:1px solid var(--line);padding:1px 7px;border-radius:6px;color:var(--accent)}
+button{font-family:inherit}
+
+/* 阅读进度条 */
+#readProgress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:120;transition:width .1s linear}
+
+/* ============================================================
+   顶栏
+   ============================================================ */
+/* 顶栏：纯色兜底，支持 color-mix 的浏览器再升级为半透明毛玻璃 */
+.topbar{position:sticky;top:0;z-index:110;height:var(--topbar-h);background:var(--bg);border-bottom:1px solid var(--hairline);transition:box-shadow .25s}
+@supports (background:color-mix(in srgb,red 50%,blue)){
+  .topbar{background:color-mix(in srgb,var(--bg) 84%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px)}
+}
+.topbar.scrolled{box-shadow:var(--shadow)}
+.topbar-inner{height:100%;padding:0 18px;display:flex;align-items:center;gap:12px}
+.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer;transition:color .2s,border-color .2s,transform .12s;flex:none}
+.icon-btn:hover{color:var(--accent);border-color:var(--accent-line)}
+.icon-btn:active{transform:scale(.93)}
+.icon-btn svg{width:18px;height:18px}
+#menuBtn{display:none}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;text-decoration:none;color:var(--ink)}
+.brand:hover{text-decoration:none}
+.brand-mark{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+.brand-mark svg{width:17px;height:17px}
+.brand-text{font-size:14.5px;font-weight:700;letter-spacing:-.2px;white-space:nowrap}
+.brand-text small{display:block;font-size:11px;font-weight:500;color:var(--ink3);letter-spacing:.04em}
+.topbar-spacer{flex:1}
+/* 进度环 */
+.ring-wrap{display:flex;align-items:center;gap:9px;padding:5px 12px 5px 6px;border:1px solid var(--line);border-radius:9999px;background:var(--surface);flex:none}
+.ring{position:relative;width:34px;height:34px}
+.ring svg{width:34px;height:34px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:3.4;stroke-linecap:round}
+.ring .ring-bg{stroke:var(--surface2)}
+.ring .ring-fg{stroke:var(--accent);transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)}
+.ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9.5px;font-weight:700;color:var(--ink)}
+.ring-label{font-size:12px;color:var(--ink2);white-space:nowrap}
+.topbar-btn{font-size:12.5px;font-weight:600;color:var(--accent);border:1px solid var(--accent-line);background:transparent;border-radius:9999px;padding:7px 15px;cursor:pointer;white-space:nowrap;transition:background .2s,transform .12s;flex:none}
+.topbar-btn:hover{background:var(--accent-soft)}
+.topbar-btn:active{transform:scale(.95)}
+
+/* ============================================================
+   布局：侧边栏 + 内容
+   ============================================================ */
+.shell{display:flex;align-items:flex-start}
+.sidebar{position:fixed;top:var(--topbar-h);left:0;bottom:0;width:var(--sidebar-w);overflow-y:auto;padding:22px 14px 30px;border-right:1px solid var(--hairline);background:var(--bg);z-index:100;scrollbar-width:thin;transition:transform .28s cubic-bezier(.4,0,.2,1)}
+.side-group{margin-bottom:20px}
+.side-group-title{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--ink3);text-transform:uppercase;padding:0 12px 7px}
+.side-link{display:flex;align-items:center;gap:9px;padding:7.5px 12px;border-radius:10px;color:var(--ink2);font-size:13.5px;font-weight:500;text-decoration:none;transition:background .15s,color .15s;position:relative}
+.side-link:hover{background:var(--surface2);color:var(--ink);text-decoration:none}
+.side-link.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.side-link.active::before{content:'';position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:99px;background:var(--accent)}
+.side-tag{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:5px;padding:1.5px 6px;flex:none;letter-spacing:.04em}
+.side-mini{margin-left:auto;display:block;width:38px;height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;flex:none}
+.side-mini i{display:block;height:100%;width:0%;background:var(--accent);border-radius:99px;transition:width .5s}
+.side-foot{margin-top:26px;padding:14px 12px 0;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:8px}
+.side-foot button{font-size:12.5px;color:var(--ink2);background:none;border:none;text-align:left;cursor:pointer;padding:6px 4px;border-radius:8px;display:flex;align-items:center;gap:8px}
+.side-foot button:hover{color:var(--accent);background:var(--surface2)}
+.side-foot svg{width:15px;height:15px;flex:none}
+#drawerOverlay{display:none}
+
+.content{flex:1;min-width:0;margin-left:var(--sidebar-w)}
+.page{max-width:880px;margin:0 auto;padding:0 28px}
+
+/* ============================================================
+   Hero 概览
+   ============================================================ */
+.hero{position:relative;overflow:hidden;padding:56px 0 44px;border-bottom:1px solid var(--line)}
+/* PCB 网格装饰背景：纯 CSS 渐变网格 + 径向渐隐，零外部资源 */
+.hero::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(var(--hairline) 1px,transparent 1px),linear-gradient(90deg,var(--hairline) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse 90% 85% at 72% 8%,#000 0%,transparent 72%);mask-image:radial-gradient(ellipse 90% 85% at 72% 8%,#000 0%,transparent 72%)}
+.hero .page{position:relative}
+.hero-kicker{font-size:12.5px;font-weight:700;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;margin-bottom:16px;font-family:var(--mono)}
+.hero h1{font-size:clamp(32px,4.6vw,46px);font-weight:700;line-height:1.16;letter-spacing:-.8px;margin-bottom:16px;max-width:760px}
+.hero h1 .hl{color:var(--accent);background:linear-gradient(transparent 60%,var(--accent-soft) 60%,var(--accent-soft) 96%,transparent 96%);padding:0 .06em;border-radius:3px;white-space:nowrap}
+.hero .sub{color:var(--ink2);font-size:16.5px;max-width:720px;margin-bottom:26px;line-height:1.65}
+.stat-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px}
+.stat-chip{background:var(--surface);border:1px solid var(--line);border-radius:9999px;padding:8px 17px;font-size:13px;font-weight:600}
+.stat-chip span{color:var(--ink2);font-weight:400}
+/* 进度卡 */
+.progress-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 26px;display:flex;align-items:center;gap:26px;flex-wrap:wrap;margin-bottom:30px;transition:border-color .3s,box-shadow .3s}
+/* 全部完成时的庆祝态 */
+.progress-card.complete{border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft),var(--shadow)}
+.progress-big{font-size:36px;font-weight:700;letter-spacing:-.6px;font-family:var(--mono);color:var(--accent)}
+.progress-info{flex:1;min-width:220px}
+.progress-label{font-size:13px;color:var(--ink2);margin-bottom:9px;line-height:1.5}
+.progress-track{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:var(--accent);border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.btn-primary{font-size:13.5px;font-weight:600;color:var(--accent-contrast);background:var(--accent);border:none;border-radius:9999px;padding:11px 22px;cursor:pointer;white-space:nowrap;transition:background .2s,transform .12s;flex:none}
+.btn-primary:hover{background:var(--accent-strong)}
+.btn-primary:active{transform:scale(.96)}
+.btn-primary:disabled{opacity:.5;cursor:default}
+/* 信号路径板 */
+.signal-board{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 24px 14px;margin-bottom:26px}
+.signal-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--ink3);margin-bottom:8px}
+.signal-head #signalPct{color:var(--accent)}
+.signal-svg{width:100%;height:auto;display:block}
+.signal-grid{stroke:var(--line);stroke-width:1}
+.signal-track{stroke:var(--line);stroke-width:2.5;fill:none}
+.signal-fill{stroke:var(--accent);stroke-width:2.5;fill:none;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1)}
+.signal-node circle{fill:var(--surface);stroke:var(--accent);stroke-width:2.5}
+.signal-node text{font-family:var(--mono);font-size:12px;font-weight:700;fill:var(--ink2)}
+.signal-caption{font-size:12.5px;color:var(--ink3);margin-top:4px}
+/* 五阶段速览 */
+.quickmap{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.qm-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;color:var(--ink);transition:border-color .2s,transform .18s}
+.qm-item:hover{border-color:var(--accent-line);text-decoration:none;transform:translateY(-2px)}
+.qm-phase{font-size:13.5px;font-weight:700}
+.qm-m{font-family:var(--mono);font-size:10.5px;color:var(--accent);letter-spacing:.04em}
+.qm-goal{font-size:12px;color:var(--ink2);line-height:1.5}
+.mini-progress{display:block;height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-top:auto;padding-top:0}
+.mini-progress i{display:block;height:100%;width:0%;background:var(--accent);border-radius:99px;transition:width .5s}
+.mini-label{font-size:11px;color:var(--ink3);margin-top:5px;font-family:var(--mono)}
+
+/* ============================================================
+   章节
+   ============================================================ */
+main section{padding:52px 0;border-bottom:1px solid var(--line)}
+main section:last-of-type{border-bottom:none}
+.sec-head{position:relative;padding-right:44px}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;margin-bottom:9px;font-family:var(--mono)}
+h2{font-size:clamp(23px,3vw,29px);font-weight:700;letter-spacing:-.5px;line-height:1.25;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h2 .num{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);padding:3px 10px;border-radius:7px;letter-spacing:.06em}
+.stage-badge{font-size:12px;font-weight:600;color:var(--ink2);background:var(--surface2);border-radius:9999px;padding:4px 13px;white-space:nowrap}
+.lead{color:var(--ink2);margin-bottom:4px;font-size:15px;max-width:75ch;line-height:1.7}
+h3{font-size:17.5px;font-weight:700;letter-spacing:-.3px;margin:30px 0 14px}
+.card h3,.callout h3,.focus-zone h3{font-size:14.5px;font-weight:700;letter-spacing:-.2px;margin:0 0 12px;color:var(--ink);display:flex;align-items:center;gap:8px}
+.card h3 .dot,.callout h3 .dot,.focus-zone h3 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+h3.warn .dot{background:var(--ink3)}
+.collapse-btn{position:absolute;top:2px;right:0;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .2s,border-color .2s,transform .25s}
+.collapse-btn:hover{color:var(--accent);border-color:var(--accent-line)}
+.collapse-btn svg{width:16px;height:16px;transition:transform .25s}
+section.collapsed .collapse-btn svg{transform:rotate(-90deg)}
+.sec-body{display:grid;grid-template-rows:1fr;transition:grid-template-rows .3s cubic-bezier(.4,0,.2,1);margin-top:22px}
+.sec-body>.sec-body-inner{overflow:hidden;min-height:0}
+section.collapsed .sec-body{grid-template-rows:0fr;margin-top:0}
+
+/* 卡片与栅格 */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin-bottom:14px;transition:border-color .2s,transform .18s,box-shadow .2s}
+.card:hover{border-color:var(--accent-line);transform:translateY(-2px);box-shadow:var(--shadow)}
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card p{font-size:14px;color:var(--ink2);line-height:1.65}
+
+/* 徽章 */
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2.5px 10px;border-radius:9999px;margin:2px 6px 2px 0;white-space:nowrap}
+.b-key{background:var(--accent);color:var(--accent-contrast)}
+.b-rec{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-line)}
+.b-free{background:var(--accent-soft);color:var(--accent)}
+.b-paid{background:var(--surface2);color:var(--ink2);border:1px solid var(--line)}
+.b-tag{background:var(--surface);color:var(--ink2);border:1px solid var(--line)}
+
+/* 勾选清单与信息清单 */
+.check,.info{list-style:none}
+.check li,.info li{display:block;position:relative;padding:8px 10px 8px 42px;border-bottom:1px dashed var(--line);font-size:14.5px;border-radius:10px;line-height:1.6}
+.check li:last-child,.info li:last-child{border-bottom:none}
+.check li{transition:background .15s;cursor:pointer}
+.check li:hover{background:var(--surface2)}
+.check li::before{content:'';position:absolute;left:10px;top:11px;width:19px;height:19px;border:1.5px solid var(--ink3);border-radius:6px;transition:all .18s;background:var(--surface)}
+.check li.done::before{background-color:var(--accent);border-color:var(--accent);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");background-size:11px 11px;background-repeat:no-repeat;background-position:center}
+.check li.pop::before{animation:checkpop .25s ease}
+@keyframes checkpop{0%{transform:scale(.55)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+.check li.done{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--hairline)}
+.check li.done strong{color:var(--ink3)}
+.check li strong,.info li strong{color:var(--ink);font-weight:600}
+.info li::before{content:'';position:absolute;left:16px;top:17px;width:6px;height:6px;border-radius:50%;background:var(--ink3)}
+.info li .src{font-family:var(--mono);font-size:11.5px;color:var(--accent);word-break:break-all}
+
+/* 提示块 */
+.note{background:var(--surface2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:13px 18px;font-size:14px;color:var(--ink2);margin:14px 0;line-height:1.65}
+.callout{background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:var(--radius);padding:20px 24px;font-size:14.5px;color:var(--ink);margin:16px 0;line-height:1.7}
+.callout h3{color:var(--accent);margin-bottom:8px}
+
+/* 表格 */
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin-bottom:14px;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:580px}
+th{text-align:left;background:var(--surface2);color:var(--ink);font-weight:700;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink2);line-height:1.6}
+td strong{color:var(--ink)}
+td small{color:var(--ink3)}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2)}
+
+/* 时间线 */
+.timeline{display:flex;flex-direction:column;margin:6px 0 4px}
+.tl-row{display:grid;grid-template-columns:118px 22px 1fr}
+.tl-weeks{font-size:12.5px;font-weight:700;color:var(--accent);text-align:right;padding:13px 0;white-space:nowrap;font-family:var(--mono)}
+.tl-rail{position:relative}
+.tl-rail::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--line);transform:translateX(-50%)}
+.tl-row:first-child .tl-rail::before{top:22px}
+.tl-row:last-child .tl-rail::before{bottom:calc(100% - 22px)}
+.tl-rail::after{content:'';position:absolute;left:50%;top:17px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);transform:translateX(-50%)}
+.tl-body{padding:9px 0 24px}
+.tl-body b{font-size:14.5px;font-weight:700;display:block;margin-bottom:3px}
+.tl-body span{font-size:13.5px;color:var(--ink2);line-height:1.6;display:block}
+
+/* 焦点区块（综合项目，深色卡片两主题通用） */
+.focus-zone{background:#14181c;color:#e8ebee;border:1px solid rgba(255,255,255,.09);border-radius:calc(var(--radius) + 6px);padding:34px 32px;margin-top:22px}
+.focus-zone .eyebrow{color:#4ade9e}
+.focus-zone h2{color:#fff}
+.focus-zone .lead{color:#9aa4ad}
+.focus-zone .card{background:#1b2127;border-color:rgba(255,255,255,.1);color:#e8ebee}
+.focus-zone .card:hover{border-color:rgba(74,222,158,.4)}
+.focus-zone h3{color:#fff}
+.focus-zone h3 .dot{background:#4ade9e}
+.focus-zone .check li{border-bottom-color:rgba(255,255,255,.09);color:#dde2e7}
+.focus-zone .check li:hover{background:rgba(255,255,255,.05)}
+.focus-zone .check li::before{border-color:#5b656e;background:transparent}
+.focus-zone .check li.done::before{background-color:#34d399;border-color:#34d399}
+.focus-zone .check li strong{color:#fff}
+.focus-zone .check li.done,.focus-zone .check li.done strong{color:#6b7680}
+.focus-zone .info li{color:#cdd4da}
+.focus-zone .info li strong{color:#fff}
+.focus-zone .info li::before{background:#5b656e}
+.focus-zone .note{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);border-left-color:#4ade9e;color:#b6bfc7}
+.focus-zone a{color:#6ee7b7}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:24px 0}
+.spec-cell{border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:16px 18px}
+.spec-cell .v{font-size:23px;font-weight:700;letter-spacing:-.4px;color:#fff;font-family:var(--mono)}
+.spec-cell .v em{font-style:normal;color:#4ade9e}
+.spec-cell .k{font-size:12px;color:#9aa4ad;margin-top:5px;line-height:1.5}
+
+/* 页脚 */
+footer{border-top:1px solid var(--line);padding:34px 0 46px}
+.foot-title{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;font-family:var(--mono)}
+footer p{font-size:13.5px;color:var(--ink2);max-width:75ch;line-height:1.7}
+
+/* 回到顶部 */
+#topBtn{position:fixed;right:22px;bottom:22px;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);font-size:18px;cursor:pointer;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .25s,transform .25s,color .2s;z-index:105;box-shadow:var(--shadow)}
+#topBtn.show{opacity:1;pointer-events:auto;transform:translateY(0)}
+#topBtn:hover{color:var(--accent);border-color:var(--accent-line)}
+
+/* ============================================================
+   滚动揭示（JS 添加 .reveal，进入视口加 .in，随后移除类还原过渡）
+   ============================================================ */
+.reveal{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s cubic-bezier(.4,0,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* 章节锚点复制按钮（JS 注入 h2） */
+.h2-anchor{opacity:0;flex:none;width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:opacity .2s,color .2s,border-color .2s;transform:translateY(1px)}
+.sec-head:hover .h2-anchor,.h2-anchor:focus-visible{opacity:1}
+.h2-anchor:hover{color:var(--accent);border-color:var(--accent-line)}
+.h2-anchor.copied{color:var(--accent);border-color:var(--accent-line)}
+.h2-anchor svg{width:14px;height:14px}
+@media (hover:none){.h2-anchor{opacity:.55}}
+
+/* 全局减弱动效：系统开启 reduced-motion 时关闭一切动画 */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+}
+
+/* ============================================================
+   响应式：移动端抽屉
+   ============================================================ */
+@media (max-width:1023px){
+  #menuBtn{display:inline-flex}
+  .sidebar{transform:translateX(-100%);top:0;padding-top:calc(var(--topbar-h) + 12px);width:min(300px,84vw);box-shadow:var(--shadow)}
+  body.drawer-open .sidebar{transform:translateX(0)}
+  #drawerOverlay{display:block;position:fixed;inset:0;background:rgba(15,18,22,.45);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s}
+  body.drawer-open #drawerOverlay{opacity:1;pointer-events:auto}
+  .content{margin-left:0}
+  .ring-label{display:none}
+  .page{padding:0 18px}
+  .tl-row{grid-template-columns:92px 20px 1fr}
+  .topbar-btn{padding:7px 11px}
+}
+@media (max-width:560px){
+  .brand-text small{display:none}
+  .topbar-btn{display:none}
+  .topbar-inner{padding:0 10px;gap:8px}
+  .brand-text{font-size:13.5px}
+  .ring-wrap{padding:4px;border:none;background:transparent}
+  .progress-card{gap:16px}
+  .focus-zone{padding:24px 18px}
+}
+
+/* 打印 */
+@media print{
+  .topbar,.sidebar,#topBtn,#drawerOverlay,#readProgress,.collapse-btn,.btn-primary,.h2-anchor{display:none!important}
+  .content{margin-left:0}
+  body{background:#fff}
+  .sec-body{grid-template-rows:1fr!important}
+  .reveal{opacity:1!important;transform:none!important}
+  /* 深色焦点区打印时转浅色，避免整版黑底废墨 */
+  .focus-zone{background:#fff;color:#24292f;border-color:#ddd}
+  .focus-zone .card{background:#fff;border-color:#ddd;color:#24292f}
+  .focus-zone h2,.focus-zone h3,.focus-zone .check li strong,.focus-zone .info li strong,.focus-zone .spec-cell .v{color:#111}
+  .focus-zone .lead,.focus-zone .check li,.focus-zone .info li,.focus-zone .spec-cell .k,.focus-zone .note{color:#444}
+  .focus-zone .spec-cell{border-color:#ddd}
+  .focus-zone .check li::before{border-color:#999;background:transparent}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到主要内容</a>
+<div id="readProgress" aria-hidden="true"></div>
+
+<!-- ================= 顶栏 ================= -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <button type="button" class="icon-btn" id="menuBtn" aria-label="打开章节导航" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
+    <a class="brand" href="#overview">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h5v-7h5v4h5V8h5"/></svg></span>
+      <span class="brand-text">嵌入式学习计划<small>AUTOMATION → FIRMWARE</small></span>
+    </a>
+    <div class="topbar-spacer"></div>
+    <div class="ring-wrap" title="总体学习进度（勾选完成率）">
+      <div class="ring" role="img" aria-label="总体进度">
+        <svg viewBox="0 0 36 36" aria-hidden="true">
+          <circle class="ring-bg" cx="18" cy="18" r="15.5" stroke-dasharray="97.39 97.39"></circle>
+          <circle class="ring-fg" id="ringFill" cx="18" cy="18" r="15.5" stroke-dasharray="97.39 97.39" stroke-dashoffset="97.39"></circle>
+        </svg>
+        <span id="ringPct">0%</span>
+      </div>
+      <span class="ring-label">学习进度</span>
+    </div>
+    <button type="button" class="icon-btn" id="themeBtn" aria-label="切换深色模式" title="切换深色 / 浅色">
+      <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/></svg>
+    </button>
+    <button type="button" class="topbar-btn" data-action="reset">重置进度</button>
+  </div>
+</header>
+
+<div id="drawerOverlay" aria-hidden="true"></div>
+
+<div class="shell">
+<!-- ================= 侧边栏 ================= -->
+<aside class="sidebar" aria-label="章节导航" id="sidebar">
+  <nav>
+    <div class="side-group">
+      <div class="side-group-title">总览</div>
+      <a class="side-link" href="#overview">概览与进度</a>
+      <a class="side-link" href="#why">专业定位</a>
+      <a class="side-link" href="#roadmap">总体路线图</a>
+    </div>
+    <div class="side-group">
+      <div class="side-group-title">五阶段主线</div>
+      <a class="side-link" href="#stage-foundation"><span class="side-tag">P0</span>筑基<span class="side-mini"><i data-mini="stage-foundation"></i></span></a>
+      <a class="side-link" href="#stage-mcu"><span class="side-tag">P1</span>单片机实战<span class="side-mini"><i data-mini="stage-mcu"></i></span></a>
+      <a class="side-link" href="#stage-rtos"><span class="side-tag">P2</span>RTOS 工程化<span class="side-mini"><i data-mini="stage-rtos"></i></span></a>
+      <a class="side-link" href="#stage-linux"><span class="side-tag">P3</span>嵌入式 Linux<span class="side-mini"><i data-mini="stage-linux"></i></span></a>
+      <a class="side-link" href="#stage-extension"><span class="side-tag">P4</span>工程拓展<span class="side-mini"><i data-mini="stage-extension"></i></span></a>
+    </div>
+    <div class="side-group">
+      <div class="side-group-title">验证与输出</div>
+      <a class="side-link" href="#capstone">PID 综合项目</a>
+      <a class="side-link" href="#competition">竞赛与项目</a>
+      <a class="side-link" href="#career">就业与岗位</a>
+    </div>
+    <div class="side-group">
+      <div class="side-group-title">资源与方法</div>
+      <a class="side-link" href="#resources">学习资源清单</a>
+      <a class="side-link" href="#hardware">硬件与工具</a>
+      <a class="side-link" href="#method">学习方法避坑</a>
+      <a class="side-link" href="#milestone">里程碑自测</a>
+      <a class="side-link" href="#references">参考资料来源</a>
+    </div>
+  </nav>
+  <div class="side-foot">
+    <button type="button" id="printBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      打印 / 导出 PDF
+    </button>
+    <button type="button" data-action="reset">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      重置全部进度
+    </button>
+  </div>
+</aside>
+
+<!-- ================= 内容区 ================= -->
+<main class="content" id="main">
+
+<!-- Hero 概览 -->
+<section class="hero" id="overview">
+  <div class="page">
+    <div class="hero-kicker">Signal Bench / Automation → Firmware</div>
+    <h1>从一根波形，<br>到一台<span class="hl">能交付的机器</span></h1>
+    <p class="sub">给自动化本科生的嵌入式工程路线：先让信号跑通，再让系统稳定，最后让项目能被面试官复现。用 12–18 个月把 C、STM32、RTOS、Linux 串成一条可验证的工程链。</p>
+    <div class="stat-row">
+      <div class="stat-chip">路线 <span>M1–M18</span></div>
+      <div class="stat-chip">投入 <span>15–25 h / 周</span></div>
+      <div class="stat-chip">硬件 <span>¥600–1500</span></div>
+      <div class="stat-chip">产出 <span>2–3 个完整项目</span></div>
+    </div>
+    <div class="progress-card">
+      <div>
+        <div class="progress-big" id="progressNum" aria-live="polite">0%</div>
+      </div>
+      <div class="progress-info">
+        <div class="progress-label" id="progressLabel">总体学习进度 · 点击条目勾选，自动本地保存</div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+      <button type="button" class="btn-primary" id="continueBtn">继续下一项</button>
+    </div>
+    <div class="signal-board" role="group" aria-label="学习信号路径：C 语言、GPIO、PWM、ADC、RTOS、Linux">
+      <div class="signal-head"><span>TRACE / LEARNING PATH</span><span id="signalPct" aria-live="polite">0% VERIFIED</span></div>
+      <svg class="signal-svg" viewBox="0 0 560 220" role="img" aria-labelledby="signalTitle signalDesc">
+        <title id="signalTitle">嵌入式学习信号路径</title>
+        <desc id="signalDesc">从 C 语言经过 GPIO、PWM、ADC、RTOS，最终到达 Linux 的学习路径。</desc>
+        <path class="signal-grid" d="M20 35H540M20 85H540M20 135H540M20 185H540M55 20V200M145 20V200M235 20V200M325 20V200M415 20V200M505 20V200" />
+        <path class="signal-track" pathLength="1" d="M20 160H105V110H190V145H275V82H365V122H450V58H540" />
+        <path class="signal-fill" id="signalFill" pathLength="1" d="M20 160H105V110H190V145H275V82H365V122H450V58H540" />
+        <g class="signal-node" transform="translate(20 160)"><circle r="7" /><text x="0" y="28" text-anchor="start">C</text></g>
+        <g class="signal-node" transform="translate(105 110)"><circle r="7" /><text x="0" y="-18" text-anchor="middle">GPIO</text></g>
+        <g class="signal-node" transform="translate(190 145)"><circle r="7" /><text x="0" y="28" text-anchor="middle">PWM</text></g>
+        <g class="signal-node" transform="translate(275 82)"><circle r="7" /><text x="0" y="-18" text-anchor="middle">ADC</text></g>
+        <g class="signal-node" transform="translate(365 122)"><circle r="7" /><text x="0" y="28" text-anchor="middle">RTOS</text></g>
+        <g class="signal-node" transform="translate(450 58)"><circle r="7" /><text x="0" y="-18" text-anchor="middle">Linux</text></g>
+      </svg>
+      <p class="signal-caption">把每一个“会了”变成一个可测量、可复现的测试点。</p>
+    </div>
+    <div class="quickmap" role="group" aria-label="五阶段速览">
+      <a class="qm-item" href="#stage-foundation"><span class="qm-phase">P0 · 筑基</span><span class="qm-m">M1–M2 / 第 1–10 周</span><span class="qm-goal">C 语言 + 数据结构 + 电路 + 单片机原理</span><span class="mini-progress"><i data-mini="stage-foundation"></i></span><span class="mini-label" data-mini-label="stage-foundation">0 / 0 项</span></a>
+      <a class="qm-item" href="#stage-mcu"><span class="qm-phase">P1 · 单片机实战</span><span class="qm-m">M3–M7 / 第 11–18 周</span><span class="qm-goal">51 快速过渡 → ARM → STM32 外设</span><span class="mini-progress"><i data-mini="stage-mcu"></i></span><span class="mini-label" data-mini-label="stage-mcu">0 / 0 项</span></a>
+      <a class="qm-item" href="#stage-rtos"><span class="qm-phase">P2 · RTOS 工程化</span><span class="qm-m">M7–M9 / 第 19–22 周</span><span class="qm-goal">FreeRTOS + 嵌入式 C 工程规范</span><span class="mini-progress"><i data-mini="stage-rtos"></i></span><span class="mini-label" data-mini-label="stage-rtos">0 / 0 项</span></a>
+      <a class="qm-item" href="#stage-linux"><span class="qm-phase">P3 · 嵌入式 Linux</span><span class="qm-m">M9–M15 / 第 23–34 周</span><span class="qm-goal">系统编程 → 板级移植 → 驱动入门</span><span class="mini-progress"><i data-mini="stage-linux"></i></span><span class="mini-label" data-mini-label="stage-linux">0 / 0 项</span></a>
+      <a class="qm-item" href="#stage-extension"><span class="qm-phase">P4 · 工程拓展</span><span class="qm-m">贯穿全程</span><span class="qm-goal">调试 / Git / 通信协议 / PCB</span><span class="mini-progress"><i data-mini="stage-extension"></i></span><span class="mini-label" data-mini-label="stage-extension">0 / 0 项</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- 01 专业定位 -->
+<section id="why">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Field note · Why</div>
+      <h2><span class="num">FIELD</span>为什么自动化专业适合嵌入式</h2>
+      <p class="lead">这并非跨专业转行，而是专业能力的自然延伸——自动化的课程体系与嵌入式软件开发的重合度，在所有工科专业中最高。先看清赛道全景，再决定精力分配。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="grid grid-2">
+      <div class="card">
+        <h3><span class="dot"></span>专业优势（无需额外补修）</h3>
+        <ul class="info">
+          <li><strong>C 语言程序设计</strong> — 嵌入式开发的核心语言</li>
+          <li><strong>电路 / 模拟电子 / 数字电子</strong> — 看懂原理图、理解外设电平与时序的基础</li>
+          <li><strong>微机原理与接口</strong> — CPU 架构、存储器、中断机制的底子</li>
+          <li><strong>自动控制原理 / 信号与系统</strong> — 电机控制与闭环算法的理论基础，对应嵌入式高薪细分方向（运动控制）</li>
+          <li><strong>单片机原理</strong> — 多数院校自动化专业均有开设（51/STM32）</li>
+          <li><strong>传感器与检测技术</strong> — 嵌入式系统采集侧的直接对口知识</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 class="warn"><span class="dot"></span>需要自行补齐的缺口</h3>
+        <ul class="info">
+          <li><strong>数据结构和算法</strong> — 校内教学深度有限，需按计算机专业标准自学</li>
+          <li><strong>操作系统原理</strong> — 自动化课程相对薄弱，是嵌入式 Linux 的地基</li>
+          <li><strong>计算机组成原理</strong> — 可自学补强（推荐 CSAPP 前四章）</li>
+          <li><strong>工程化能力</strong> — Git、Makefile、调试工具、代码规范</li>
+          <li><strong>Linux 使用与编程</strong> — 校内基本不涉及，需完全自学</li>
+          <li><strong>计算机网络</strong> — 物联网/嵌入式通信方向必备</li>
+          <li><strong>专业英文阅读</strong> — 数据手册与技术文档以英文为主，越早适应收益越大</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="note" role="note">结论：主要短板在「软件工程底子」，而非「硬件直觉」；而软件底子恰恰是自学成本最低的部分。</aside>
+
+    <h3>四条主赛道全景</h3>
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">嵌入式四条主赛道对比：职责、核心技能、入门难度与对应学习阶段</caption>
+        <thead><tr><th scope="col">赛道</th><th scope="col">做什么</th><th scope="col">核心技能</th><th scope="col">入门难度</th><th scope="col">对应学习阶段</th></tr></thead>
+        <tbody>
+          <tr><td><strong>单片机 / MCU 工程师</strong></td><td>STM32/ESP32 裸机或轻量 RTOS 固件开发</td><td>C、外设驱动、协议（串口/I2C/SPI）、FreeRTOS</td><td><span aria-hidden="true">★☆☆☆☆</span><span class="sr-only">难度 1/5</span></td><td>阶段二–三</td></tr>
+          <tr><td><strong>嵌入式 Linux 应用工程师</strong></td><td>在 Linux 上开发应用层程序、通信与 UI</td><td>C/C++、Linux 系统编程、Socket、多线程、Qt</td><td><span aria-hidden="true">★★★☆☆</span><span class="sr-only">难度 3/5</span></td><td>阶段四</td></tr>
+          <tr><td><strong>Linux 驱动 / BSP 工程师</strong></td><td>内核驱动、设备树、系统移植</td><td>内核机制、硬件协议、汇编</td><td><span aria-hidden="true">★★★★☆</span><span class="sr-only">难度 4/5</span></td><td>阶段四后期（按目标岗位取舍）</td></tr>
+          <tr><td><strong>嵌入式 AI / 边缘计算</strong></td><td>端侧推理、模型部署（TFLite/ONNX）、AIoT</td><td>Python、C、NPU/GPU 加速、模型量化</td><td><span aria-hidden="true">★★★★☆</span><span class="sr-only">难度 4/5</span></td><td>主线完成后的升级方向</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="callout" role="note"><h3><span class="dot"></span>自动化专业建议</h3>以 <strong>单片机 → RTOS → Linux 应用</strong> 为主线建立完整能力，期间用控制类项目（电机/小车）发挥专业优势；驱动与 AI 作为主线完成后的升级方向。岗位量与薪资对比见 <a href="#career">就业与岗位画像</a>。</aside>
+    </div></div>
+  </div>
+</section>
+
+<!-- 02 总体路线图 -->
+<section id="roadmap">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">System map · Roadmap</div>
+      <h2><span class="num">MAP</span>总体路线图与时间规划</h2>
+      <p class="lead">主线为 C 语言 → 数据结构/算法 → 51 → STM32 → RTOS → Linux → 综合项目。月度口径（12–18 个月，弹性）与周口径（40 周 ≈ 10 个月，紧凑）互为参照：学期中按月度弹性推进，寒暑假可按周口径加速。相邻阶段的边界月（M7/M9/M13/M15）为过渡期。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <h3>五阶段主线（月度口径）</h3>
+    <div class="timeline">
+      <div class="tl-row"><div class="tl-weeks">M1–M2</div><div class="tl-rail"></div><div class="tl-body"><b>Phase 0 · 筑基期 — C 语言强化 + 数据结构 + 电路基础</b><span>指针、内存、位运算达到熟练运用；补齐数据结构；电路按「能看懂开发板原理图」的标准复习。</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">M3–M7</div><div class="tl-rail"></div><div class="tl-body"><b>Phase 1 · 入门期 — 51 快速过渡（2–3 周）→ STM32 核心外设</b><span>51 只掌握寄存器/中断/定时器工作方式；主力投入 STM32：GPIO/中断/定时器/PWM/串口/ADC/DMA，扩展 I2C/SPI。</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">M7–M9</div><div class="tl-rail"></div><div class="tl-body"><b>Phase 2 · 工程化期 — FreeRTOS + 嵌入式 C 工程规范</b><span>任务/队列/信号量/互斥量；同步强化状态机、环形缓冲、模块化与 Git 管理。</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">M9–M15</div><div class="tl-rail"></div><div class="tl-body"><b>Phase 3 · 系统化期 — 嵌入式 Linux：应用 → 驱动</b><span>Linux 使用与脚本 → 系统编程（进程/线程/IPC/Socket）→ 交叉编译与板级移植 → 字符设备驱动与设备树。应用为主，驱动按目标岗位取舍。</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">M15–M18</div><div class="tl-rail"></div><div class="tl-body"><b>Phase 4 · 冲刺期 — 综合项目 + 竞赛 + 求职准备</b><span>完成 2–3 个可写入简历的完整项目；参加电赛、智能车、嵌入式大赛；整理面经、刷题、撰写简历。</span></div></div>
+    </div>
+
+    <h3>逐月时间规划</h3>
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">12–18 个月逐阶段时间规划：主线任务、里程碑验收标准与周均投入</caption>
+        <thead><tr><th scope="col">月份</th><th scope="col">主线任务</th><th scope="col">里程碑（验收标准）</th><th scope="col">周均投入</th></tr></thead>
+        <tbody>
+          <tr><td><strong>M1–M2</strong></td><td>C 语言强化 + 数据结构起步 + 电路复习</td><td>能独立手写链表/队列；能看懂最小系统板原理图</td><td>15h</td></tr>
+          <tr><td><strong>M3–M7</strong></td><td>51 快速入门（2–3 周）+ STM32 核心外设与协议</td><td>51：寄存器点灯/外部中断/精确定时；STM32：串口/DMA/ADC/PWM 全部掌握，I2C 驱动 OLED，SPI 驱动模块</td><td>20h</td></tr>
+          <tr><td><strong>M7–M9</strong></td><td>FreeRTOS + 嵌入式 C 规范</td><td>多任务+队列+信号量项目；完成 1 个带状态机的完整固件</td><td>20h</td></tr>
+          <tr><td><strong>M9–M13</strong></td><td>Linux 使用 → 系统编程 → 板级</td><td>能在开发板上运行自己编译的内核；完成串口/TCP 应用开发</td><td>22h</td></tr>
+          <tr><td><strong>M13–M15</strong></td><td>Linux 驱动（按需）/ 项目深化</td><td>字符设备驱动 + 设备树点亮 LED；或转 C++/Qt 上位机</td><td>22h</td></tr>
+          <tr><td><strong>M15–M18</strong></td><td>综合项目 + 竞赛 + 求职</td><td>2–3 个简历级项目 + 面经/刷题/简历</td><td>25h</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid grid-3">
+      <div class="card"><h3><span class="dot"></span>大一 / 大二上</h3><p>时间最充裕，按完整 18 个月执行，寒暑假全速推进，大二下即可参赛（电赛/智能车）。</p></div>
+      <div class="card"><h3><span class="dot"></span>大二下 / 大三上</h3><p>压缩路线：跳过 51 或仅投入 1–2 周，直接学习 STM32；Linux 阶段只学应用、暂不涉及驱动，12–14 个月完成。</p></div>
+      <div class="card"><h3><span class="dot"></span>大三下（临近就业）</h3><p>极限模式：STM32 + FreeRTOS + Linux 应用三件套，8–10 个月，主攻单片机/应用岗，项目优先于理论。</p></div>
+    </div>
+    <aside class="note" role="note">大三是否考研请在 M9 前确定：考研则 Linux 阶段后置，以单片机 + RTOS 保底能力参加秋招/实习；就业则全力推进 Linux。</aside>
+
+    <h3>周粒度视图（紧凑 40 周口径，约 10 个月）</h3>
+    <div class="timeline">
+      <div class="tl-row"><div class="tl-weeks">第 1–4 周</div><div class="tl-rail"></div><div class="tl-body"><b>C 语言进阶</b><span>指针 / 内存 / 数据结构，产出 Ring Buffer 等可复用模块</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">第 5–7 周</div><div class="tl-rail"></div><div class="tl-body"><b>电子电路基础</b><span>重点传感器信号调理，能读懂开发板原理图</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">第 8–10 周</div><div class="tl-rail"></div><div class="tl-body"><b>单片机原理</b><span>GPIO / 中断 / 定时器，完成阶段一检验项目</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">第 11–13 周</div><div class="tl-rail"></div><div class="tl-body"><b>ARM Cortex-M 架构</b><span>内核、NVIC、启动流程，配合权威指南</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">第 14–18 周</div><div class="tl-rail"></div><div class="tl-body"><b>STM32 外设开发</b><span>USART / TIM / ADC / I2C / SPI，逐个击破并做小实验</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">第 19–22 周</div><div class="tl-rail"></div><div class="tl-body"><b>FreeRTOS</b><span>任务调度 / 信号量 / 消息队列，完成多任务采集终端</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">第 23–28 周</div><div class="tl-rail"></div><div class="tl-body"><b>嵌入式 Linux</b><span>交叉编译、U-Boot / 内核 / 设备树、应用编程</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">第 29–34 周</div><div class="tl-rail"></div><div class="tl-body"><b>驱动开发入门</b><span>字符设备 → platform → I2C 子系统，完成传感器驱动</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">第 35–37 周</div><div class="tl-rail"></div><div class="tl-body"><b>工程拓展集中强化</b><span>CAN / Modbus、Git 工程化、逻辑分析仪实战</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">第 38–40 周</div><div class="tl-rail"></div><div class="tl-body"><b>PID 综合项目冲刺</b><span>电机双闭环达标，整理文档与代码仓库，完成能力验证</span></div></div>
+    </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 03 阶段一 · 筑基 -->
+<section id="stage-foundation">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Phase 0 · Foundation</div>
+      <h2><span class="num">P0</span>阶段一 · 筑基 <span class="stage-badge">M1–M2 · 第 1–10 周</span></h2>
+      <p class="lead">把 C 语言从「会做题」提升到「能写工程」，建立读电路图的能力，理解单片机如何工作。此阶段不追求快，追求每个概念都能落到代码和硬件上。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="card">
+      <h3><span class="dot"></span>C 语言：从「会做题」到「能写工程」</h3>
+      <ul class="check">
+        <li><strong>指针与内存</strong> — 指针数组/数组指针/函数指针/多级指针；malloc/free 与堆栈区别、内存四区、野指针排查</li>
+        <li><strong>位运算</strong> — 嵌入式寄存器操作的基础（&amp; | ^ ~ &lt;&lt; &gt;&gt;）</li>
+        <li><strong>结构体/联合体/枚举/位域</strong> — 数据封装的核心手段</li>
+        <li><strong>static / extern / const / volatile</strong> — 嵌入式面试高频考点，直接对应硬件特性</li>
+        <li><strong>预处理器与编译链接</strong> — 理解 .c → .o → .elf 全过程，会写基础 Makefile</li>
+        <li><strong>模块化编程</strong> — 头文件组织、条件编译、接口与实现分离</li>
+      </ul>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3><span class="dot"></span>数据结构：嵌入式够用标准</h3>
+        <ul class="check">
+          <li>链表（单/双/环形）— 驱动与内核中广泛使用</li>
+          <li>栈与队列（含环形队列 Ring Buffer）— 串口缓冲的标准实现</li>
+          <li>二叉树与基础排序 — 面试现场编码的门槛（快排/冒泡/二分）</li>
+          <li>哈希表概念 — 了解即可</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>电路与硬件直觉</h3>
+        <ul class="check">
+          <li>元件：电阻/电容/二极管/三极管/MOS 管——作用与典型用法</li>
+          <li>上拉/下拉、灌电流/拉电流、开漏输出——看懂原理图的关键</li>
+          <li>RC 充放电与去耦——电源完整性的直觉</li>
+          <li><strong>信号调理</strong>：分压采样、RC 滤波、运放同相/反相放大（传感器接口前级）</li>
+          <li>数电：逻辑门/触发器/时序电路（学校课程 + 仿真验证）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3><span class="dot"></span>单片机原理（概念铺垫）</h3>
+        <ul class="check">
+          <li>CPU / 存储 / 外设寄存器模型——一切外设操作都是读写寄存器</li>
+          <li>时钟树与复位、中断的基本概念</li>
+          <li>点亮第一个外设：GPIO 输出、按键输入（轮询 + 中断两种写法）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>成果检验（达到后再进阶）</h3>
+        <ul class="check">
+          <li>不查资料手写<strong>通用环形缓冲区模块</strong>（后续串口项目直接复用）</li>
+          <li><strong>3 小时内</strong>独立实现链表增删查改，无内存错误（可用 valgrind 验证）</li>
+          <li>用定时器 + 中断实现频率/占空比可调 PWM，驱动 LED 呼吸灯</li>
+          <li>能讲清：指针与数组的区别、中断发生时的完整流程、最小系统原理图每个部分的作用</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="callout" role="note"><h3><span class="dot"></span>自动化专业结合点</h3>电路部分重点放在<strong>传感器接口</strong>：分压采样、RC 滤波与运放调理，正是「检测技术」课程的硬件落地。PWM 实验即后续电机调速的源头——做呼吸灯时记录「占空比—亮度」的非线性关系，提前建立<strong>被控对象特性</strong>的直觉。</aside>
+    </div></div>
+  </div>
+</section>
+
+<!-- 04 阶段二 · 单片机实战 -->
+<section id="stage-mcu">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Phase 1 · MCU</div>
+      <h2><span class="num">P1</span>阶段二 · 单片机实战 <span class="stage-badge">M3–M7 · 第 11–18 周</span></h2>
+      <p class="lead">进入工业界主流的 ARM Cortex-M 世界。51 只做快速过渡，主力投入 STM32：吃透核心外设，每个外设都要「看懂 → 独立重写 → 改参数 → 观察现象」。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="card">
+      <h3><span class="dot"></span>51 单片机：2–3 周快速过渡（可选但推荐）</h3>
+      <p>用寄存器方式学习：GPIO → 中断 → 定时器 → 串口。目的不是会用 51，而是掌握<strong>「寄存器—时钟—外设」这套底层逻辑</strong>，为 STM32 奠定基础。基础较好者可直接跳过。</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3><span class="dot"></span>ARM Cortex-M 体系架构（第 11–13 周）</h3>
+        <ul class="check">
+          <li>内核寄存器组、工作模式与异常模型</li>
+          <li><strong>NVIC</strong>：中断优先级分组、抢占与响应优先级</li>
+          <li>存储器映射与外设地址空间、启动流程（启动文件 → main）</li>
+          <li>能读懂基础汇编与.map 文件，理解栈/堆在 RAM 中的布局</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>STM32 核心外设（第 14–18 周）</h3>
+        <ul class="check">
+          <li><strong>开发方式</strong> — HAL 库 + CubeMX 图形化配置（当前主流），与寄存器对照理解</li>
+          <li><strong>GPIO / 中断 EXTI / SysTick</strong> — 入门三件套</li>
+          <li><strong>定时器 TIM</strong> — PWM 输出、输入捕获、编码器模式（电机测速必备）</li>
+          <li><strong>USART</strong> — 中断/DMA 收发，对接自研 Ring Buffer；学会查数据手册</li>
+          <li><strong>ADC / DAC + DMA</strong> — 多通道采集链路，掌握均值/中值/一阶滞后滤波</li>
+          <li><strong>I2C / SPI</strong> — 驱动 OLED(SSD1306)、温湿度传感器、Flash(W25Qxx)</li>
+          <li><strong>看门狗与 SWD 在线调试</strong> — 独立看门狗 IWDG、断点/单步/外设寄存器查看</li>
+          <li><strong>CAN（选学）</strong> — 汽车电子/工业控制方向加分项（详见阶段五）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="dot"></span>成果检验（量化标准）</h3>
+      <ul class="check">
+        <li>不看例程，从空工程配置时钟树，用定时器产生 <strong>1kHz PWM</strong>，串口打印 ADC 采样值</li>
+        <li>用<strong>输入捕获/编码器模式</strong>实现转速测量，误差 ≤ 1%</li>
+        <li>串口命令行：上位机发指令可查询/修改采样周期等运行参数</li>
+        <li>I2C 驱动 OLED 显示实时数据 + SPI 读写 Flash 掉电保存参数</li>
+      </ul>
+    </div>
+    <aside class="callout" role="note"><h3><span class="dot"></span>自动化专业结合点</h3>每个外设都对应控制系统的关键环节：<strong>输入捕获 = 测速反馈通道</strong>，<strong>ADC = 电流/电压采样</strong>，<strong>PWM = 执行机构驱动</strong>。学习方式牢记<strong>视频 : 动手 = 1 : 2</strong>——看懂不等于会做。</aside>
+    </div></div>
+  </div>
+</section>
+
+<!-- 05 阶段三 · RTOS 与工程化 -->
+<section id="stage-rtos">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Phase 2 · RTOS</div>
+      <h2><span class="num">P2</span>阶段三 · RTOS 与工程化 <span class="stage-badge">M7–M9 · 第 19–22 周</span></h2>
+      <p class="lead">从裸机到多任务：理解「为什么裸机难以支撑复杂系统」，同步建立嵌入式 C 工程规范。此阶段结束时应能独立做出「采集 + 通信 + 显示」的完整固件。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="grid grid-2">
+      <div class="card">
+        <h3><span class="dot"></span>FreeRTOS：任务与调度</h3>
+        <ul class="check">
+          <li>任务创建/删除/挂起、优先级抢占与时间片调度机制</li>
+          <li>队列 / 队列集、二值与计数信号量、互斥量、事件组、任务通知</li>
+          <li>任务与中断的 API 分工（xxxFromISR）、临界区保护</li>
+          <li>内存管理（heap_4 原理）、栈大小评估与栈溢出检测</li>
+          <li>优先级反转与互斥量的优先级继承</li>
+          <li>软件定时器、CPU 占用率统计与运行时间分析</li>
+          <li>进阶：阅读 FreeRTOS 内核源码关键部分（调度器/链表）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>嵌入式 C 工程化</h3>
+        <ul class="check">
+          <li>模块化分层：驱动层/中间层/应用层分离</li>
+          <li>状态机编程（协议解析、按键消抖的标准解法）</li>
+          <li>环形缓冲区、消息封装、代码风格规范</li>
+          <li>版本控制起步：Git 基础命令与提交规范（分支工作流与托管详见 <a href="#stage-extension">§07 工程拓展</a>）</li>
+          <li>调试技能：串口打印分级、断点/仿真器（仪器调试详见阶段五）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="dot"></span>成果检验（阶段小项目）</h3>
+      <ul class="check">
+        <li><strong>多任务数据采集终端</strong>：传感器任务 + 通信任务 + OLED 显示任务，全部通过消息队列解耦</li>
+        <li>能讲清信号量与互斥量的区别、优先级反转的成因与对策</li>
+        <li>量化标准：系统连续运行 <strong>24 小时</strong>无死机、无内存泄漏（heap 剩余稳定），有 CPU 占用率统计</li>
+      </ul>
+    </div>
+    <aside class="callout" role="note"><h3><span class="dot"></span>自动化专业结合点</h3>学 RTOS 时体会「<strong>控制周期 = 任务周期</strong>」的对应关系——任务周期直接决定后续 PID 环的离散化质量，这是《计算机控制系统》课程知识的工程实践。多任务采集终端即「数据采集与监控系统（SCADA）」的最小原型。</aside>
+    </div></div>
+  </div>
+</section>
+
+<!-- 06 阶段四 · 嵌入式 Linux -->
+<section id="stage-linux">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Phase 3 · Linux</div>
+      <h2><span class="num">P3</span>阶段四 · 嵌入式 Linux <span class="stage-badge">M9–M15 · 第 23–34 周</span></h2>
+      <p class="lead">从「裸机 / RTOS」跨入嵌入式 Linux 世界，理解操作系统如何管理硬件。以应用开发为主线，驱动按目标岗位取舍——这是从单片机工程师走向嵌入式系统工程师的分水岭。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="grid grid-2">
+      <div class="card">
+        <h3><span class="dot"></span>Linux 应用（主线，第 23–28 周）</h3>
+        <ul class="check">
+          <li>Linux 安装与使用：命令/权限/进程管理/Shell 脚本</li>
+          <li>编辑器与工具链：Vim、GCC、Makefile、GDB</li>
+          <li>系统编程：文件 IO、进程/线程、IPC（管道/共享内存/信号）、Socket 网络编程</li>
+          <li>交叉编译：PC 编写代码 → 交叉工具链编译 → 部署到开发板运行</li>
+          <li>板级入门：U-Boot 启动 → 内核启动 → 根文件系统，跑通全流程</li>
+          <li>系统定制：用 Buildroot 构建最小根文件系统并烧录启动</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>Linux 驱动（按目标岗位取舍，第 29–34 周）</h3>
+        <ul class="check">
+          <li>字符设备驱动框架（file_operations、设备节点、注册/卸载）</li>
+          <li>设备树 Device Tree 基础：DTS 语法、节点与属性</li>
+          <li>platform 总线模型：驱动与设备分离、probe/remove 匹配</li>
+          <li>GPIO / 中断子系统：pinctrl + request_irq 实现按键驱动</li>
+          <li>并发与竞态、阻塞/非阻塞 IO、内核定时器</li>
+          <li>I2C 子系统：通读框架源码，编写一个传感器驱动（如 SHT30）</li>
+          <li>内核调试手段：printk 分级、ftrace、/proc 与 /sys 文件系统</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="note" role="note">驱动岗门槛高、岗位相对少；若非明确走 BSP/驱动路线，应用层优先，驱动掌握框架即可。</aside>
+    <div class="card">
+      <h3><span class="dot"></span>成果检验（量化标准）</h3>
+      <ul class="check">
+        <li>独立完成「裁剪内核 + 修改设备树 + 烧录启动」全流程，并写出演示文档</li>
+        <li><strong>I2C 传感器驱动</strong>：应用层 read 拿到正确温湿度数据，insmod/rmmod 反复加载稳定</li>
+        <li>Socket 小项目：开发板作为服务器，PC 端实时接收采样数据</li>
+        <li>能画出并讲清<strong>一次 read() 从应用到硬件的完整调用链</strong></li>
+      </ul>
+    </div>
+    <aside class="callout" role="note"><h3><span class="dot"></span>自动化专业结合点</h3>Linux 网关是工业自动化的标准形态：<strong>下位机（STM32）跑实时控制，上位机（Linux）做人机界面、数据记录与网络通信</strong>。此阶段的 Socket 项目可复用阶段三的采集终端，构成「STM32 + Linux 网关」二级架构——这正是 PLC/DCS 系统中最常见的分层控制思想。</aside>
+    </div></div>
+  </div>
+</section>
+
+<!-- 07 阶段五 · 工程拓展 -->
+<section id="stage-extension">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Phase 4 · Engineering</div>
+      <h2><span class="num">P4</span>阶段五 · 工程拓展 <span class="stage-badge">贯穿全程 · 第 35–40 周集中强化</span></h2>
+      <p class="lead">这些能力不单独成章，却是工程师与爱好者的分水岭。建议在每个阶段顺手完成对应条目，冲刺期前集中补齐。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="grid grid-2">
+      <div class="card">
+        <h3><span class="dot"></span>调试技能（硬功夫）</h3>
+        <ul class="check">
+          <li>SWD/JTAG 断点调试、GDB + OpenOCD 命令行调试</li>
+          <li>HardFault 栈回溯定位（从寄存器现场反推出错代码行）</li>
+          <li>逻辑分析仪：解码 I2C/SPI/CAN 时序，验证波形与协议一致性</li>
+          <li>示波器：看 PWM 波形、电源纹波、信号完整性</li>
+          <li>串口日志分级（DEBUG/INFO/ERROR）与断言设计</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>通信协议与可靠性</h3>
+        <ul class="check">
+          <li>UART/I2C/SPI 进阶：时序参数、总线竞争、DMA 双缓冲</li>
+          <li><strong>CAN 总线</strong>：帧格式、滤波器配置、双节点收发实验（工业总线重点）</li>
+          <li><strong>Modbus RTU</strong>：在 RS485 上实现从站，与上位机主站通信</li>
+          <li>可靠性设计：低功耗模式、看门狗策略、EMC 常识、软件去抖与容错</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3><span class="dot"></span>工程习惯</h3>
+        <ul class="check">
+          <li>Git 分支工作流、规范 commit、所有项目托管 GitHub/Gitee</li>
+          <li>每个项目配完整 README：架构图 + 接线图 + 复现步骤</li>
+          <li>建立英文阅读习惯：查 Datasheet、读开源代码、写英文注释</li>
+          <li>坚持写技术博客/笔记——面试时这就是最好的能力证明</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>加分项（选做，提升竞争力）</h3>
+        <ul class="info">
+          <li><strong>立创EDA 画板</strong>：设计并打样一块自己的 STM32 核心板——从「用板子」到「造板子」<span class="badge b-rec">强烈推荐</span></li>
+          <li><strong>SimpleFOC</strong>：开源磁场定向控制库，STM32 即可跑 BLDC 无刷电机<span class="badge b-key">电机控制</span></li>
+          <li><strong>RT-Thread 源码阅读</strong>：对比 FreeRTOS，理解国产 RTOS 设备框架</li>
+          <li><strong>Betaflight / PX4 飞控</strong>：阅读 IMU 姿态解算与串级 PID 代码</li>
+          <li><strong>ST Motor Control Workbench</strong>：官方 FOC SDK，生成工程对照学习</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="callout" role="note"><h3><span class="dot"></span>自动化专业结合点</h3><strong>CAN 与 Modbus 是工厂现场的事实标准</strong>：变频器、伺服驱动器、PLC 之间几乎都跑在这两类总线上。完成「STM32 + CAN + Modbus 从站」实验后，你就具备了与工业设备对话的能力——这是纯软件背景工程师很难补齐的一块，也是自动化专业学生最该放大的优势。</aside>
+    </div></div>
+  </div>
+</section>
+
+<!-- 08 综合验证项目（焦点区） -->
+<section id="capstone">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Capstone · Control loop</div>
+      <h2><span class="num">PROJ</span>综合验证项目</h2>
+      <p class="lead">融合控制理论、传感器、RTOS 与通信的毕业级项目——通过即代表你达到了「独立完成实际嵌入式项目」的目标。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="focus-zone">
+      <div class="eyebrow">Capstone · Control loop</div>
+      <h2 style="font-size:clamp(21px,2.6vw,26px)">直流电机 PID 双闭环控制系统</h2>
+      <p class="lead" style="margin-bottom:6px">所有指标可测量、可复现，也是最对口的简历级项目。</p>
+      <div class="spec-grid">
+        <div class="spec-cell"><div class="v">≤ <em>±2%</em></div><div class="k">速度环稳态误差（额定负载）</div></div>
+        <div class="spec-cell"><div class="v">≤ <em>10%</em></div><div class="k">阶跃响应超调量</div></div>
+        <div class="spec-cell"><div class="v">≤ <em>0.5s</em></div><div class="k">调节时间（进入 ±2% 误差带）</div></div>
+        <div class="spec-cell"><div class="v">≤ <em>±1</em> 脉冲</div><div class="k">位置环定位误差（编码器当量）</div></div>
+        <div class="spec-cell"><div class="v"><em>2h</em> 无异常</div><div class="k">连续运行 + FreeRTOS 任务 CPU 占用统计</div></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3><span class="dot"></span>系统构成（全部自己动手）</h3>
+          <ul class="check">
+            <li><strong>硬件</strong>：STM32 + TB6612 驱动 + 带编码器直流减速电机 + 电流采样</li>
+            <li><strong>反馈通道</strong>：定时器编码器接口测速，M/T 法兼顾高低速精度</li>
+            <li><strong>控制算法</strong>：增量式 PID 速度环 + 位置环，抗积分饱和、输出限幅</li>
+            <li><strong>RTOS 架构</strong>：控制任务（1–5ms 硬周期）/ 通信任务 / 监控任务分离</li>
+            <li><strong>上位机</strong>：串口实时曲线（Python + pyserial + matplotlib 或 SerialPlot）</li>
+            <li><strong>整定过程</strong>：Ziegler-Nichols / 试凑法对比，记录每组参数的响应曲线</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="dot"></span>验收流程与进阶路线</h3>
+          <ul class="info">
+            <li><strong>Step 1</strong>：开环测电机特性（死区、稳态增益、时间常数）——给建模一个交代</li>
+            <li><strong>Step 2</strong>：速度环整定，阶跃响应达标（指标见上）</li>
+            <li><strong>Step 3</strong>：叠加位置环构成串级控制，完成点到点定位</li>
+            <li><strong>Step 4（进阶）</strong>：接入 CAN 总线，模拟两台电机主从跟随</li>
+            <li><strong>Step 5（进阶）</strong>：对比模糊 PID / 参数自整定，或迁移 SimpleFOC 驱动 BLDC</li>
+            <li>开源参考：SimpleFOC、ST MC Workbench 生成工程、Betaflight 串级 PID</li>
+          </ul>
+        </div>
+      </div>
+      <aside class="note" role="note">简历级项目三要素：形成「下位机 + 协议 + 上位机 + 调试闭环」完整链路；能讲清架构图、关键难点、调试过程与性能数据；宁深勿多——1 个有测试数据、有踩坑记录的项目优于 5 个 demo。</aside>
+    </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 09 学习资源清单 -->
+<section id="resources">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Kit · Resources</div>
+      <h2><span class="num">KIT</span>学习资源清单</h2>
+      <p class="lead">已于 2026-08 逐一核实。课程集数、价格与竞赛时间线以官网当届通知为准，可能随年份微调。<span class="badge b-free">免费</span>表示视频与资料全部免费；<span class="badge b-paid">付费</span>表示核心内容收费。学生预算下主线课程基本零成本。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <h3>视频课程（按学习顺序排列）</h3>
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">推荐视频课程清单：课程名、主讲机构、内容特点、渠道、费用与活跃度</caption>
+        <thead><tr><th scope="col">课程</th><th scope="col">主讲/机构</th><th scope="col">内容与特点</th><th scope="col">渠道</th><th scope="col">费用</th><th scope="col">活跃度</th></tr></thead>
+        <tbody>
+          <tr><td><strong>程序设计入门——C 语言</strong></td><td>翁恺（浙大）</td><td>中文 C 语言入门首选，累计学员超 180 万</td><td>中国大学MOOC + B站</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-rec">活跃</span></td></tr>
+          <tr><td><strong>C 语言程序设计进阶</strong></td><td>翁恺（浙大）</td><td>指针、结构体、链表进阶内容，衔接嵌入式 C</td><td>中国大学MOOC + B站</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-rec">活跃</span></td></tr>
+          <tr><td><strong>51单片机入门教程 2020版</strong></td><td>江协科技</td><td>38 集，寄存器级教学，讲透「寄存器—时钟—外设」底层逻辑（可选）</td><td>B站 + 官网</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-rec">活跃</span></td></tr>
+          <tr><td><strong>STM32入门教程 2023版</strong></td><td>江协科技</td><td>50 集已完结（33.5h），最小系统板+面包板重实操，全网播放超 2000 万</td><td>B站 + jiangxiekeji.com</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-rec">活跃</span></td></tr>
+          <tr><td><strong>手把手教你学STM32 HAL库开发</strong></td><td>正点原子</td><td>F103/F407 全系列，讲解细致、循序渐进，配套文档最全</td><td>B站 + openedv.com</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-key">非常活跃</span></td></tr>
+          <tr><td><strong>STM32库开发实战指南</strong></td><td>野火</td><td>体系化教学，CubeMX+开源工具链，文档口碑最佳</td><td>B站 + doc.embedfire.com</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-rec">活跃</span></td></tr>
+          <tr><td><strong>FreeRTOS入门与工程实践</strong></td><td>韦东山（100ask）</td><td>基于 DShanMCU-F103，2 周入门 RTOS，视频+资料+源码全免费</td><td>B站 + 100ask.net</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-key">非常活跃</span></td></tr>
+          <tr><td><strong>嵌入式Linux应用/驱动开发基础</strong></td><td>韦东山（100ask）</td><td>应用开发+驱动入门全流程，Linux 阶段的免费主力课</td><td>100ask.net + B站</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-key">非常活跃</span></td></tr>
+          <tr><td><strong>操作系统（32讲）</strong></td><td>李治军（哈工大）</td><td>以「从零为 CPU 配置 OS」为主线，走 Linux 方向必学，配 12 个实验</td><td>B站 + 中国大学MOOC</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-tag">稳定</span></td></tr>
+          <tr><td><strong>计算机组成原理（108讲）</strong></td><td>袁春风（南大）</td><td>寄存器/总线/中断的硬件本质，与 STM32 学习互补</td><td>B站 + 中国大学MOOC</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-rec">开课中</span></td></tr>
+          <tr><td><strong>数据结构</strong></td><td>陈越（浙大）</td><td>面试必考，覆盖嵌入式链表/队列/树的工程用法</td><td>B站 + 中国大学MOOC</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-rec">开课中</span></td></tr>
+          <tr><td><strong>CSAPP（CMU 15-213）</strong></td><td>CMU</td><td>内存/汇编/系统调用，前四章打底，中英字幕 B站可看</td><td>B站</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-paid">内容固定</span></td></tr>
+          <tr><td><strong>驱动大全（IMX6ULL）</strong></td><td>韦东山（100ask）</td><td>Linux 驱动深入（字符设备/设备树/子系统），走驱动岗再学</td><td>100ask 官方平台</td><td><span class="badge b-paid">¥2299</span></td><td><span class="badge b-key">非常活跃</span></td></tr>
+          <tr><td><strong>十天学会51单片机</strong></td><td>郭天祥</td><td>经典但已过时（约 2007–2009 年录制，旧工具链），仅作历史参考</td><td>B站（第三方转载）</td><td><span class="badge b-free">免费</span></td><td><span class="badge b-paid">已停更</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="note" role="note">付费边界说明：江协/正点原子/野火的视频与资料全部免费（靠销售硬件盈利）；韦东山 FreeRTOS 免费、Linux 驱动进阶付费（IMX6ULL 驱动大全官方价 ¥2299/原价 ¥4999）。</aside>
+
+    <h3>书籍（按阶段阅读）</h3>
+    <div class="grid grid-2">
+      <div class="card"><h3><span class="dot"></span>C 语言 / 数据结构</h3>
+        <ul class="info">
+          <li><strong>《C Primer Plus》</strong> — C 语言入门经典，可作常备工具书</li>
+          <li><strong>《C和指针》/《深入理解C指针》</strong> — 指针精髓，嵌入式必读</li>
+          <li><strong>《C陷阱与缺陷》</strong> — 规避常见误区，进阶补充</li>
+          <li><strong>《大话数据结构》</strong> — 趣味入门；<strong>《数据结构与算法分析：C 语言描述》</strong> — 严谨进阶</li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>单片机 / ARM / RTOS</h3>
+        <ul class="info">
+          <li><strong>《新概念51单片机C语言教程》</strong> — 51 阶段经典教材</li>
+          <li><strong>《STM32库开发实战指南》</strong>（野火）— STM32 体系化首选</li>
+          <li><strong>《ARM Cortex-M3/M4 权威指南》</strong>Joseph Yiu — 内核原理权威参考</li>
+          <li><strong>《FreeRTOS 内核实现与应用开发实战》</strong>（野火）— RTOS 阶段配套</li>
+          <li><strong>芯片数据手册（Datasheet）</strong> — 第一手资料，教程只是转述</li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>Linux / 系统</h3>
+        <ul class="info">
+          <li><strong>《鸟哥的Linux私房菜·基础篇》</strong> — Linux 使用必读</li>
+          <li><strong>《UNIX环境高级编程》(APUE)</strong> — Linux 系统编程权威著作</li>
+          <li><strong>《嵌入式Linux应用开发完全手册》</strong>（韦东山）— 全流程实战</li>
+          <li><strong>《Linux设备驱动开发详解》</strong>（宋宝华）/ <strong>《Linux设备驱动程序》LDD3</strong> — 驱动方向参考（当字典查阅）</li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>开源项目参考</h3>
+        <ul class="info">
+          <li><strong>RT-Thread</strong> — 国产 RTOS，设备驱动框架值得精读</li>
+          <li><strong>SimpleFOC</strong> — 开源磁场定向控制库，电机控制进阶</li>
+          <li><strong>Betaflight / PX4</strong> — 飞控固件，姿态解算与串级 PID 的工业级实现</li>
+          <li><strong>Linux 内核源码</strong> drivers/i2c — 驱动子系统的最佳范本</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>网站 / 社区 / 工具链</h3>
+    <div class="grid grid-3">
+      <div class="card"><h3><span class="dot"></span>开发板厂商资料站</h3>
+        <ul class="info">
+          <li>正点原子论坛 openedv.com — 资料最全</li>
+          <li>野火文档 doc.embedfire.com — 在线文档最佳</li>
+          <li>韦东山百问网 100ask.net — Linux 资源中心</li>
+          <li>江协科技 jiangxiekeji.com — 免费教程+资料下载</li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>路线与题库</h3>
+        <ul class="info">
+          <li>GitHub 0voice/EmbeddedSoftwareLearn — 全景知识总结</li>
+          <li>GitHub gccnb/Embedded-Career-Roadmap — 自动化专业向实战库</li>
+          <li>牛客网 — 面经+校招薪资行情</li>
+          <li>飞书《嵌入式-51-32-RTOS-Linux-AI项目资料汇总》— 课程主线资料</li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>开发工具</h3>
+        <ul class="info">
+          <li>STM32CubeMX — 图形化配置（当前主流）</li>
+          <li>Keil MDK / STM32CubeIDE — 编译调试环境</li>
+          <li>立创EDA — 国产免费 PCB 设计</li>
+          <li>Git + 串口助手 + 逻辑分析仪 — 工程化标配</li>
+        </ul>
+      </div>
+    </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 10 硬件与工具清单 -->
+<section id="hardware">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Kit · Hardware</div>
+      <h2><span class="num">GEAR</span>硬件与工具清单</h2>
+      <p class="lead">按阶段分次购买，不必一次买齐。学生预算下，入门到 Linux 全阶段硬件投入约 <strong>¥600–1500</strong>（借用实验室工具可再省 ¥130–300），竞赛/实验室经费可报销。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">分阶段硬件采购清单：推荐硬件、预算与说明</caption>
+        <thead><tr><th scope="col">阶段</th><th scope="col">推荐硬件</th><th scope="col">预算</th><th scope="col">说明</th></tr></thead>
+        <tbody>
+          <tr><td><strong>入门（M2–M4）</strong></td><td>STM32F103C8T6 最小系统板 + 面包板 + 杜邦线 + 外设模块（OLED/DHT11/按键/数码管/蜂鸣器）+ ST-Link 调试器</td><td>¥150–250</td><td>性价比首选：最小系统板 ¥20–40，ST-Link 约 ¥20（SWD 四线即可）</td></tr>
+          <tr><td><strong>入门备选</strong></td><td>51 开发板（STC89C52）</td><td>¥50–100</td><td>可选——仅在想掌握寄存器底层逻辑时购买，基础好可直接上 STM32</td></tr>
+          <tr><td><strong>传感器套件</strong></td><td>MPU6050、DS18B20、旋转编码器、0.96" OLED</td><td>¥50–100</td><td>阶段二外设实验与后续 PID 项目的反馈器件</td></tr>
+          <tr><td><strong>进阶（M5–M8）</strong></td><td>野火指南者 / 正点原子精英版 F103 套件，或 ESP32 开发板（IoT 方向）</td><td>¥200–400 / ¥30–60</td><td>套件开箱即用、教程配套完整；ESP32 自带 WiFi/蓝牙</td></tr>
+          <tr><td><strong>Linux（M9–M13）</strong></td><td>韦东山 IMX6ULL 或全志 T113 开发板，或二手树莓派 4B / 全志 D1s</td><td>¥300–600</td><td>韦东山/正点原子资料免费配套；树莓派社区资源最广；D1s 可低成本体验 RISC-V</td></tr>
+          <tr><td><strong>工具</strong></td><td>万用表、烙铁套装、逻辑分析仪（24MHz 约 ¥30）、串口调试助手（软件）</td><td>¥130–300</td><td>示波器先借用实验室；逻辑分析仪即可抓取 I2C/SPI 时序</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="callout" role="note"><h3><span class="dot"></span>省钱建议</h3>① 最小系统板方案最经济（无板载外设，自行连接面包板，同时锻炼原理图理解能力）；② 参加电赛/智能车/嵌入式大赛可报销开发板与模块；③ 学校创新实验室/社团通常配有示波器、焊台等公共设备。</aside>
+    </div></div>
+  </div>
+</section>
+
+<!-- 11 竞赛与项目 -->
+<section id="competition">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Field test · Competition</div>
+      <h2><span class="num">RACE</span>竞赛与项目</h2>
+      <p class="lead">竞赛是「以赛代练」的加速器：迫使你完整走完需求 → 设计 → 调试 → 答辩闭环，还能报销硬件、进入实验室。自动化专业的优先级排序：<strong>智能车 ≈ 电赛 &gt; 嵌入式大赛 &gt; 物联网大赛 &gt; 蓝桥杯</strong>。注意：学业成绩仍占保研/综测权重的 80–90%，竞赛是放大器而非替代品。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <h3>竞赛总览（时间线以当届官网通知为准）</h3>
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">主要竞赛对比：主办方、组队方式、时间线、定位与适合年级</caption>
+        <thead><tr><th scope="col">竞赛</th><th scope="col">主办</th><th scope="col">组队</th><th scope="col">时间线</th><th scope="col">定位</th><th scope="col">适合年级</th></tr></thead>
+        <tbody>
+          <tr><td><strong>电子设计竞赛（电赛）</strong></td><td>教育部+工信部</td><td>3人/队</td><td>奇数年国赛（7 月底–8 月初）；偶数年省赛（与全国大学生电子设计竞赛模拟电子系统设计专题赛初赛合并举行）</td><td><span class="badge b-key">含金量最高</span>四天三夜实战，赛区奖约40%，全国奖≤8%</td><td>大二暑假黄金期</td></tr>
+          <tr><td><strong>智能汽车竞赛</strong></td><td>中国自动化学会</td><td>3–5人/队</td><td>报名1–6月（6月20日截止）→ 分赛区7月 → 国赛8月（安徽大学）</td><td><span class="badge b-rec">最契合自动化</span>运动控制/PID/传感器正是自动化强项</td><td>大一大二进实验室</td></tr>
+          <tr><td><strong>嵌入式芯片与系统设计竞赛</strong></td><td>中国电子教育学会</td><td>3人/队</td><td>2月启动 → 4 月下旬报名截止 → 8月全国总决赛</td><td><span class="badge b-rec">投入产出比最高</span>ST/海思等企业赛道，与考研冲突小</td><td>大二大三</td></tr>
+          <tr><td><strong>蓝桥杯（嵌入式组）</strong></td><td>工信部人才交流中心</td><td>个人赛</td><td>报名10月–12月 → 4月省赛 → 6月国赛</td><td><span class="badge b-tag">入门练手</span>STM32+HAL 库，约 1 个月可达省赛水平</td><td>大一即可</td></tr>
+          <tr><td><strong>物联网设计竞赛</strong></td><td>多企业（华为/乐鑫/TI等）</td><td>3人/队</td><td>报名 4 月初–6 月中旬 → 8月下旬总决赛（免费参赛）</td><td>走 IoT/AIoT 方向必参加，多个企业赛道</td><td>大二大三</td></tr>
+          <tr><td><strong>RoboMaster 机甲大师</strong></td><td>大疆</td><td>团队</td><td>前一年10月报名 → 次年5–8月区域赛/国赛</td><td>简历价值极高，但需长期战队投入（半年以上）</td><td>大一进战队</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="note" role="note">成本说明：智能车整车约 ¥2000–4000（组别差异大；多数院校实验室或竞赛经费可报销），参赛前先确认学院报销政策。</aside>
+
+    <h3>竞赛时间轴建议（与主计划同步）</h3>
+    <div class="timeline">
+      <div class="tl-row"><div class="tl-weeks">大一/大二上</div><div class="tl-rail"></div><div class="tl-body"><b>打基础 + 试水蓝桥杯</b><span>C 语言 + STM32 入门阶段，报名蓝桥杯嵌入式组练手；同时申请加入学校智能车/机器人战队。</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">大二全年</div><div class="tl-rail"></div><div class="tl-body"><b>长期战队 + 校赛</b><span>智能车/电赛集训队：跟随学长做车、做板、调 PID，参与校级选拔；这一年进步速度最快。</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">大二暑假</div><div class="tl-rail"></div><div class="tl-body"><b>全力冲刺电赛（国赛年）</b><span>四天三夜实战是简历上最有分量的素材；即使未获国奖，完整参赛经历也足以写入简历。</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">大三</div><div class="tl-rail"></div><div class="tl-body"><b>嵌入式大赛 / 物联网大赛出成果</b><span>用前期积累做完整产品级项目参赛，获奖概率高，且时间与考研冲突小（8月决赛）。</span></div></div>
+      <div class="tl-row"><div class="tl-weeks">大三下</div><div class="tl-rail"></div><div class="tl-body"><b>整理简历项目</b><span>将竞赛作品改造为可讲述的简历项目（RS485/Modbus 主线），准备秋招。</span></div></div>
+    </div>
+
+    <h3>简历级项目清单（按性价比排序）</h3>
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">简历级项目清单：项目、体现能力、成本、难度与定位</caption>
+        <thead><tr><th scope="col">项目</th><th scope="col">体现的能力</th><th scope="col">成本</th><th scope="col">难度</th><th scope="col">定位</th></tr></thead>
+        <tbody>
+          <tr><td><strong>RS485/Modbus 工业采集系统</strong><br><small>STM32 + MAX485 + 上位机</small></td><td>串口中断接收、RS485 半双工方向控制、Modbus RTU 协议栈、CRC16、状态机、上位机联调</td><td>¥50–400</td><td>中</td><td><span class="badge b-key">工业就业含金量最高</span>打通「下位机+协议+上位机」完整闭环</td></tr>
+          <tr><td><strong>直流电机 PID 双闭环</strong><br><small>见 <a href="#capstone">综合项目章节</a></small></td><td>编码器测速、串级 PID、FreeRTOS 周期任务、上位机实时曲线</td><td>¥150–300</td><td>中</td><td>自动化控制理论的直接应用，本计划的指定验证项目</td></tr>
+          <tr><td><strong>平衡小车</strong><br><small>STM32 + MPU6050 + 编码器</small></td><td>串级 PID（角度/速度/转向）、互补滤波姿态解算、I2C/PWM、蓝牙遥控</td><td>¥300–800</td><td>中</td><td>经典入门项目，与 PID 综合项目互为印证</td></tr>
+          <tr><td><strong>数据采集系统</strong><br><small>ADC + DMA + 信号调理 + 上位机</small></td><td>多通道采集、运放调理（4–20 mA）、数字滤波、FFT、示波器调试</td><td>¥100–300</td><td>低-中</td><td>信号链路基本功，可与 Modbus 项目合并为「工业采集终端」</td></tr>
+          <tr><td><strong>智能家居</strong><br><small>STM32/ESP32 + MQTT + 云平台</small></td><td>FreeRTOS 多任务（采集+上报）、WiFi 协议、MQTT、小程序/APP</td><td>¥200–500</td><td>中低</td><td>最易出演示效果；需加入创新点以避免同质化</td></tr>
+          <tr><td><strong>四轴飞行器</strong><br><small>STM32F4 + MPU9250 + 无刷电机</small></td><td>四元数姿态解算、串级 PID、PWM 调速、2.4G 通信、PCB 设计</td><td>¥200–2000</td><td>高</td><td>技术区分度大，但调参周期长，建议作为第二个项目</td></tr>
+          <tr><td><strong>进阶加分项</strong><br><small>CAN/BMS、工业网关、边缘AI</small></td><td>CAN 总线、AUTOSAR 概念、Modbus TCP/S7、NPU 部署</td><td>视平台</td><td>高</td><td>对齐汽车电子/智能制造岗位，用于拉开差距</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="note" role="note">项目原则：宁深勿多。1–2 个「能讲清原理、有测试数据、有踩坑记录」的项目优于 5 个 demo。每个项目必须能回答三问：做了什么（指标）、怎么做的（架构/协议/算法）、遇到什么坑以及如何解决（调试证据）。</aside>
+    </div></div>
+  </div>
+</section>
+
+<!-- 12 就业与岗位画像 -->
+<section id="career">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Output · Career</div>
+      <h2><span class="num">JOBS</span>就业与岗位画像</h2>
+      <p class="lead">数据基于 2025–2026 校招行情（牛客、职友集、Glassdoor、真实 JD 与 offer 交叉验证）。薪资为一线城市本科应届口径，注意区分「月薪×12~15薪」与「年薪总包」。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <h3>六大岗位方向</h3>
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">六大岗位方向对比：职责、核心技能、入门难度、岗位量与应届薪资</caption>
+        <thead><tr><th scope="col">岗位方向</th><th scope="col">做什么</th><th scope="col">核心技能</th><th scope="col">入门难度</th><th scope="col">岗位量</th><th scope="col">应届薪资(一线)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>单片机/MCU 工程师</strong></td><td>STM32/ESP32 裸机或轻 RTOS 固件</td><td>C、外设驱动、UART/I2C/SPI/CAN</td><td><span aria-hidden="true">★☆☆☆☆</span><span class="sr-only">难度 1/5</span></td><td>最多</td><td>8–15K/月</td></tr>
+          <tr><td><strong>RTOS 工程师</strong></td><td>工控/电机控制/低功耗 IoT</td><td>FreeRTOS/RT-Thread、任务调度、FOC/PID</td><td><span aria-hidden="true">★★☆☆☆</span><span class="sr-only">难度 2/5</span></td><td>中</td><td>10–15K/月（头部 18K）</td></tr>
+          <tr><td><strong>Linux 应用工程师</strong></td><td>应用层程序、通信、UI</td><td>C/C++、Linux 系统编程、Socket、多线程、Qt</td><td><span aria-hidden="true">★★★☆☆</span><span class="sr-only">难度 3/5</span></td><td>最大</td><td>10–18K/月（头部 20–35K）</td></tr>
+          <tr><td><strong>Linux 驱动/BSP 工程师</strong></td><td>内核驱动、设备树、系统移植</td><td>内核机制、驱动框架、设备树、汇编</td><td><span aria-hidden="true">★★★★☆</span><span class="sr-only">难度 4/5</span></td><td>少</td><td>硕士应届 18–30K，SP 30K+</td></tr>
+          <tr><td><strong>汽车电子嵌入式</strong></td><td>BMS/VCU/域控/AUTOSAR</td><td>CAN/LIN、AUTOSAR、UDS 诊断、ISO 26262、车规 MCU</td><td><span aria-hidden="true">★★★★☆</span><span class="sr-only">难度 4/5</span></td><td>增长最快</td><td>8–23K/月（硕士 15K 起）</td></tr>
+          <tr><td><strong>嵌入式AI/边缘计算</strong></td><td>端侧推理、模型部署、AIoT</td><td>Python、C、TinyML、NPU 加速、量化</td><td><span aria-hidden="true">★★★★☆</span><span class="sr-only">难度 4/5</span></td><td>增长中</td><td>15–25K/月（头部 30K）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>校招薪资全景（一线城市本科应届）</h3>
+    <div class="grid grid-2">
+      <div class="card"><h3><span class="dot"></span>城市维度（主流区间）</h3>
+        <ul class="info">
+          <li><strong>北京</strong> — 10–30K（头部 20–40K，上限最高）</li>
+          <li><strong>上海</strong> — 8–35K（工控+汽车电子+AI芯片）</li>
+          <li><strong>深圳</strong> — 12–25K（岗位密度全国最高）</li>
+          <li><strong>广州</strong> — 10–20K（生态相对偏弱）</li>
+          <li>二线城市整体下浮 30–40%</li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>真实 offer 样本（2025–2026）</h3>
+        <ul class="info">
+          <li>华为嵌入式软件开发 — 16–26K×12</li>
+          <li>经纬恒润自动驾驶嵌入式（硕士）— 13–23K×15</li>
+          <li>比亚迪嵌入式软件助理（本科）— 7–12K×12</li>
+          <li>双非自动化本科 → OPPO SP 年薪 31 万（2025 届样本）</li>
+          <li>交叉验证：职友集本科应届平均约 18.7K/月（68.5% 落在 10–30K 区间）</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="note" role="note">结论：主流区间 10–20K/月（年薪 12–28 万，含年终）；头部/SP/汽车电子赛道 20–30K+；硕士溢价因城市/企业而异——一线大厂上浮 5–12K，全国平均口径差距不明显。</aside>
+
+    <h3>行业版图：谁在招应届生</h3>
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">校招行业梯队：行业、代表企业、嵌入式方向与景气度</caption>
+        <thead><tr><th scope="col">梯队</th><th scope="col">行业</th><th scope="col">代表企业</th><th scope="col">嵌入式方向</th><th scope="col">景气度</th></tr></thead>
+        <tbody>
+          <tr><td>T0</td><td>自动驾驶/新能源车</td><td>比亚迪、理想、小鹏、蔚来、经纬恒润</td><td>车控底层、BMS、AUTOSAR、底盘控制</td><td><span class="badge b-key">增长最确定</span></td></tr>
+          <tr><td>T1</td><td>消费电子</td><td>华为、小米、OPPO、大疆、海康威视</td><td>Linux 驱动、RTOS、音视频、BLE/WiFi</td><td><span class="badge b-paid">波动较大</span></td></tr>
+          <tr><td>T1</td><td>通信设备</td><td>华为、中兴、新华三、TP-Link</td><td>路由器/交换机、协议栈、网络内核</td><td><span class="badge b-rec">稳定</span></td></tr>
+          <tr><td>T2</td><td>工业控制/能源</td><td>汇川、台达、阳光电源、中控技术</td><td>运动控制、伺服、PLC、变流器</td><td><span class="badge b-rec">稳定+国产替代</span></td></tr>
+          <tr><td>T2</td><td>医疗设备</td><td>迈瑞、联影、理邦</td><td>RTOS、设备控制、图像处理</td><td><span class="badge b-rec">稳定+壁垒高</span></td></tr>
+          <tr><td>T2</td><td>军工/国企</td><td>中电科各所、航天科工/科技、兵器</td><td>雷达/飞控嵌入式、通信系统</td><td><span class="badge b-tag">稳定（硕士为主）</span></td></tr>
+          <tr><td>T2</td><td>半导体/芯片原厂</td><td>乐鑫、瑞芯微、全志、广和通</td><td>协议栈、SDK、驱动、BSP</td><td><span class="badge b-key">需求最大</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>自动化专业的优势与劣势</h3>
+    <div class="grid grid-2">
+      <div class="card"><h3><span class="dot"></span>软硬结合 + 控制理论</h3>
+        <ul class="info">
+          <li><strong>课程重叠度最高</strong> — 模电/数电/电路/单片机/微机原理/传感器，几乎所有嵌入式 JD 均要求这些</li>
+          <li><strong>控制理论是差异化武器</strong> — 电机控制（FOC）、BMS 算法、飞控、运动控制，是相对计算机/电子专业的独家优势</li>
+          <li><strong>自动化出现在几乎所有 JD 的接受专业名单中</strong> — 简历不会因专业被筛除</li>
+          <li><strong>机器人/智能车/电赛天然对口</strong> — 最容易产出竞赛经历</li>
+        </ul>
+      </div>
+      <div class="card"><h3 class="warn"><span class="dot"></span>必须正视的短板</h3>
+        <ul class="info">
+          <li><strong>编程深度不足</strong> — 数据结构/算法/OS/Linux 弱于计算机专业，是大厂笔试的硬门槛</li>
+          <li><strong>课程「杂而不精」</strong> — 需自行选定一条主线深耕</li>
+          <li><strong>依赖课外自学</strong> — 成功案例的共同点：实验室/竞赛/实习/自学补课，不能只靠课堂</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>招聘 JD 关键词（学习目标对标）</h3>
+    <div class="card">
+      <span class="badge b-key">C 语言（必写）</span><span class="badge b-rec">STM32</span><span class="badge b-rec">ARM Cortex-M</span><span class="badge b-rec">FreeRTOS / RT-Thread</span><span class="badge b-rec">嵌入式 Linux</span><span class="badge b-rec">UART / SPI / I2C / CAN</span><span class="badge b-rec">能看懂原理图</span><span class="badge b-rec">示波器 / 逻辑分析仪</span><span class="badge b-key">项目经验（电赛/智能车/蓝桥杯）</span><span class="badge b-tag">ISO 26262（车）</span><span class="badge b-tag">低功耗</span><span class="badge b-tag">AUTOSAR（车）</span><span class="badge b-tag">Modbus / EtherCAT（工控）</span>
+    </div>
+    <aside class="callout" role="note"><h3><span class="dot"></span>主攻顺序建议</h3><strong>MCU+RTOS 保底 → Linux 应用扩面 → 汽车电子/工控差异化</strong>。避免「泛嵌入式」式学习，尽早选定主攻方向，其余作为了解。</aside>
+    </div></div>
+  </div>
+</section>
+
+<!-- 13 学习方法与避坑 -->
+<section id="method">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Field note · Method</div>
+      <h2><span class="num">METHOD</span>学习方法与避坑指南</h2>
+      <p class="lead">嵌入式入门最常见的失败原因不是「学不会」，而是「只看不动手」。以下正误对照与每周模板帮助保持节奏。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="grid grid-2">
+      <div class="card"><h3 class="warn"><span class="dot"></span>常见误区</h3>
+        <ul class="info">
+          <li>只看视频不敲代码 — 嵌入式入门最常见的失败原因</li>
+          <li>贪多：同时学习 51+STM32+Linux+Python — 一次只推进一条主线</li>
+          <li>只学库函数调用，不看寄存器 — 面试追问底层即暴露短板</li>
+          <li>不做项目就刷简历 — 项目是唯一可写入简历的硬通货</li>
+          <li>忽视调试能力 — 不会用示波器/逻辑分析仪/仿真器，等于不具备实操能力</li>
+          <li>抄代码不改一行 — 必须独立编写、修改参数、制造并修复 bug</li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>正确做法</h3>
+        <ul class="info">
+          <li>视频 : 动手 = 1 : 2，宁慢勿快</li>
+          <li>每个外设学完立即做最小实验并写笔记</li>
+          <li>每周至少产出 1 个可演示的成果</li>
+          <li>进实验室/找学长学姐组队（调试效率翻倍）</li>
+          <li>数据手册是第一手资料，教程只是转述</li>
+          <li>博客/英文阅读/Git 工程习惯见 <a href="#stage-extension">工程拓展章节</a>，避免重复列项</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>每周学习模板（示例）</h3>
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">每周学习时间安排示例：时间段、内容与产出</caption>
+        <thead><tr><th scope="col">时间段</th><th scope="col">内容</th><th scope="col">产出</th></tr></thead>
+        <tbody>
+          <tr><td>周一–周三（每晚 2h）</td><td>看视频/读文档，跟做实验</td><td>笔记 + 实验截图</td></tr>
+          <tr><td>周四–周五（每晚 1.5h）</td><td>不看资料，独立重写实验</td><td>能独立跑通</td></tr>
+          <tr><td>周六（4–6h）</td><td>本周综合小项目 / 调 bug / 补数据结构</td><td>可演示的小成果</td></tr>
+          <tr><td>周日（2–3h）</td><td>总结笔记 + 写博客 / 复盘本周踩坑</td><td>1 篇笔记/博客</td></tr>
+        </tbody>
+      </table>
+    </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 14 里程碑检查点 -->
+<section id="milestone">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Check · Milestones</div>
+      <h2><span class="num">CHECK</span>里程碑检查点（自测清单）</h2>
+      <p class="lead">达到这些标准，才算真正掌握——未达标就回到对应阶段补齐，进度可以慢，标准不要降。</p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="card">
+      <ul class="check">
+        <li><strong>M2 检查点</strong> — 不查资料能手写：单链表增删查 + 快排；能讲清指针和数组的区别与联系</li>
+        <li><strong>M7 检查点</strong> — 不看例程，从空工程开始配置时钟，用定时器产生 1kHz PWM，串口打印 ADC 采样值</li>
+        <li><strong>M9 检查点</strong> — 用 FreeRTOS 实现 3 个任务通过队列通信的完整固件；能讲清信号量与互斥量区别</li>
+        <li><strong>M13 检查点</strong> — 在开发板上跑通自己编译的内核；实现一个跨进程 Socket 通信程序</li>
+        <li><strong>M18 检查点</strong> — 完成 PID 双闭环综合项目全部验收指标；能向面试官 10 分钟讲清 3 个项目的架构、难点、调试与数据</li>
+      </ul>
+    </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 15 参考资料 -->
+<section id="references">
+  <div class="page">
+    <div class="sec-head">
+      <div class="eyebrow">Source log · References</div>
+      <h2><span class="num">SOURCE</span>参考资料与来源</h2>
+      <p class="lead">本计划基于以下来源交叉编制。培训机构「人才缺口百万级」类无官方出处的数据已主动排除。<strong>参考资料链接已于 2026-08 联网核实；薪资与竞赛时间线以官网当届通知为准。</strong></p>
+      <!-- 折叠按钮由 JS 注入（无 JS 时不显示死按钮） -->
+    </div>
+    <div class="sec-body"><div class="sec-body-inner">
+    <div class="grid grid-2">
+      <div class="card"><h3><span class="dot"></span>核心主线资料</h3>
+        <ul class="info">
+          <li>飞书 wiki《嵌入式-51-32-RTOS-Linux-AI项目资料汇总》— C 语言→数据结构→89C51→STM32→ESP32→RTOS→Linux→AI 主线<br><a class="src" href="https://x509p6c8to.feishu.cn/wiki/C5HHw0MqOii1d8kdziFcu1TlnJg" target="_blank" rel="noopener">x509p6c8to.feishu.cn/wiki/C5HHw0MqOii1d8kdziFcu1TlnJg ↗</a></li>
+        </ul>
+        <h3 style="margin-top:16px"><span class="dot"></span>学习路线</h3>
+        <ul class="info">
+          <li>GitHub 0voice/EmbeddedSoftwareLearn — 中文社区嵌入式软件全景路线<br><a class="src" href="https://github.com/0voice/EmbeddedSoftwareLearn" target="_blank" rel="noopener">github.com/0voice/EmbeddedSoftwareLearn ↗</a></li>
+          <li>GitHub gccnb/Embedded-Career-Roadmap — 面向自动化/通信专业的实战资料库<br><a class="src" href="https://github.com/gccnb/Embedded-Career-Roadmap" target="_blank" rel="noopener">github.com/gccnb/Embedded-Career-Roadmap ↗</a></li>
+          <li>腾讯云开发者《嵌入式入门全攻略（12-18个月）》<br><a class="src" href="https://cloud.tencent.com.cn/developer/news/2222751" target="_blank" rel="noopener">cloud.tencent.com.cn/developer/news/2222751 ↗</a></li>
+          <li>掘金《大学四年规划》（嵌入式学习路线，大学四年规划）<br><a class="src" href="https://juejin.cn/post/7543567327666552858" target="_blank" rel="noopener">juejin.cn/post/7543567327666552858 ↗</a></li>
+          <li>张巧龙《大一新生攻略》（毕业15K学生整理的嵌入式学习路线）<br><a class="src" href="https://www.eet-china.com/mp/a457339.html" target="_blank" rel="noopener">eet-china.com/mp/a457339.html ↗</a></li>
+          <li>电子发烧友《嵌入式Linux驱动底层开发建议学习路线》<span class="badge b-tag">站内搜索标题</span><br><a class="src" href="https://www.elecfans.com/" target="_blank" rel="noopener">elecfans.com（未检索到唯一链接，站内搜标题）↗</a></li>
+          <li>eet-china《超详细嵌入式学习路线图》<span class="badge b-tag">站内搜索标题</span><br><a class="src" href="https://www.eet-china.com/" target="_blank" rel="noopener">eet-china.com（未检索到唯一链接，站内搜标题）↗</a></li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>自动化专业适配</h3>
+        <ul class="info">
+          <li>eet-china《自动化专业该如何学习嵌入式？》（课程对照+控制框图分析）</li>
+          <li>阿里云开发者《毫无保留，这是我全部的嵌入式学习&秋招经验》（自动化本科）</li>
+          <li>nowcoder《自动化专业与嵌入式》讨论（4大方向+单片机切入）</li>
+          <li>科普中国/高校培养方案（课程设置比对）</li>
+        </ul>
+        <h3 style="margin-top:16px"><span class="dot"></span>就业与薪资</h3>
+        <ul class="info">
+          <li>牛客网：嵌入式岗位薪资解析、北上广深行情、2025秋招总结</li>
+          <li>职友集 jobui.com、Glassdoor、worldsalaries、ERI 薪资统计</li>
+          <li>猎聘/BOSS直聘/智联 应届 JD 约 30 份（关键词统计）</li>
+          <li>高校就业网与企业校招页（华为/经纬恒润/比亚迪/迈瑞等 offer 样本）</li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>竞赛官方</h3>
+        <ul class="info">
+          <li>电赛：nuedc.xjtu.edu.cn（全国组委会）</li>
+          <li>智能车：smartcarrace.com + 中国自动化学会 caa.org.cn</li>
+          <li>嵌入式大赛：socchina.net + 海思开发者社区</li>
+          <li>蓝桥杯：dasai.lanqiao.cn</li>
+          <li>物联网大赛：iot.sjtu.edu.cn</li>
+          <li>RoboMaster：robomaster.com · ROBOCON：robocon.org.cn</li>
+        </ul>
+      </div>
+      <div class="card"><h3><span class="dot"></span>资源方官网</h3>
+        <ul class="info">
+          <li>江协科技 jiangxiekeji.com（免费教程+资料）</li>
+          <li>正点原子 openedv.com / 野火 doc.embedfire.com</li>
+          <li>韦东山百问网 100ask.net / 韦东山经典书单（博客园）</li>
+          <li>中国大学MOOC/B站（翁恺/李治军/袁春风/陈越/CSAPP 公开课）</li>
+        </ul>
+      </div>
+    </div>
+    </div></div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <div class="page">
+    <p class="foot-title">使用说明</p>
+    <p>点击任意学习条目即可勾选，进度自动保存在本机浏览器（localStorage），关闭页面后不会丢失；顶栏「重置进度」可清空全部勾选。建议每周末对照各阶段「成果检验」与「里程碑检查点」复盘一次——进度可以慢，标准不要降。</p>
+    <p style="margin-top:10px">本计划基于公开网络资料编制，供学习参考 · 更新于 2026-08 · 主线资料：<a href="https://x509p6c8to.feishu.cn/wiki/C5HHw0MqOii1d8kdziFcu1TlnJg" target="_blank" rel="noopener">《嵌入式-51-32-RTOS-Linux-AI项目资料汇总》</a></p>
+  </div>
+</footer>
+
+<button id="topBtn" type="button" aria-label="回到顶部" title="回到顶部">↑</button>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============================================================
+     工具：选择器 / 本地存储 / 动效偏好
+     ============================================================ */
+  function $(sel, root){ return (root || document).querySelector(sel); }
+  function $$(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  var store = {
+    get: function(key, fallback){
+      try {
+        var raw = localStorage.getItem(key);
+        return raw === null ? fallback : JSON.parse(raw);
+      } catch(e){ return fallback; }
+    },
+    set: function(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} },
+    remove: function(key){ try { localStorage.removeItem(key); } catch(e){} }
+  };
+  var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  /* ============================================================
+     1. 深色模式（配合 <head> 预初始化脚本，切换无闪烁）
+     ============================================================ */
+  function initTheme(){
+    var THEME_KEY = 'embedded-plan-theme';
+    var btn = $('#themeBtn');
+    var moon = $('#iconMoon');
+    var sun = $('#iconSun');
+    var meta = $('meta[name="theme-color"]');
+    function apply(t){
+      document.documentElement.setAttribute('data-theme', t);
+      var dark = t === 'dark';
+      if (moon) moon.style.display = dark ? 'none' : '';
+      if (sun) sun.style.display = dark ? '' : 'none';
+      if (meta) meta.setAttribute('content', dark ? '#14161a' : '#f7f6f3');
+    }
+    apply(document.documentElement.getAttribute('data-theme') || 'light');
+    if (btn) btn.addEventListener('click', function(){
+      var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      apply(next);
+      store.set(THEME_KEY, next);
+    });
+  }
+
+  /* ============================================================
+     2. 勾选与进度
+     - 事件委托：在 #main 上统一监听，替代逐条绑定
+     - 沿用 localStorage key + 文本哈希，历史进度无缝继承
+     ============================================================ */
+  var CHECK_KEY = 'embedded-plan-checked-v4';
+  var STAGES = ['stage-foundation','stage-mcu','stage-rtos','stage-linux','stage-extension'];
+  var checkItems = [];
+  var stageCache = [];
+
+  function hashId(t){
+    var h = 5381;
+    for (var i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) >>> 0;
+    return 'chk-' + h.toString(36);
+  }
+  function isCheckLi(el){
+    return !!(el && el.tagName === 'LI' && el.parentElement && el.parentElement.classList.contains('check'));
+  }
+  function findNextUnchecked(){
+    for (var i = 0; i < checkItems.length; i++){
+      if (!checkItems[i].el.classList.contains('done')) return checkItems[i];
+    }
+    return null;
+  }
+  function getItemLabel(item){
+    if (!item) return '';
+    var strong = item.el.querySelector('strong');
+    return (strong ? strong.textContent : item.el.textContent).replace(/\s+/g, ' ').trim();
+  }
+  function persistChecks(){
+    var state = {};
+    checkItems.forEach(function(it){ if (it.el.classList.contains('done')) state[it.id] = true; });
+    store.set(CHECK_KEY, state);
+  }
+  function renderProgress(){
+    var done = checkItems.filter(function(it){ return it.el.classList.contains('done'); }).length;
+    var pct = checkItems.length ? Math.round(done / checkItems.length * 100) : 0;
+    var numEl = $('#progressNum');
+    var fillEl = $('#progressFill');
+    var labelEl = $('#progressLabel');
+    var ringFill = $('#ringFill');
+    var ringPct = $('#ringPct');
+    var signalFill = $('#signalFill');
+    var signalPct = $('#signalPct');
+    var continueBtn = $('#continueBtn');
+    if (numEl) numEl.textContent = pct + '%';
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (ringFill) ringFill.style.strokeDashoffset = String(97.39 - 97.39 * pct / 100);
+    if (ringPct) ringPct.textContent = pct + '%';
+    if (signalFill) signalFill.style.strokeDashoffset = String(1 - pct / 100);
+    if (signalPct) signalPct.textContent = pct + '% VERIFIED';
+    var next = findNextUnchecked();
+    if (labelEl) labelEl.textContent = next ? '下一项：' + getItemLabel(next) : '全部检查项已完成 · 继续维护项目质量';
+    if (continueBtn){
+      continueBtn.disabled = !next;
+      continueBtn.textContent = next ? '继续下一项' : '全部通过';
+      continueBtn.title = next ? '跳转到：' + getItemLabel(next) : '所有学习检查项已完成';
+    }
+    /* 100% 庆祝态 */
+    var card = $('.progress-card');
+    if (card) card.classList.toggle('complete', checkItems.length > 0 && pct === 100);
+    /* 各阶段迷你进度条 */
+    stageCache.forEach(function(s){
+      var d = s.items.filter(function(li){ return li.classList.contains('done'); }).length;
+      var p = s.items.length ? Math.round(d / s.items.length * 100) : 0;
+      s.bars.forEach(function(b){ b.style.width = p + '%'; });
+      s.labs.forEach(function(l){ l.textContent = d + ' / ' + s.items.length + ' 项'; });
+    });
+  }
+  function toggleItem(li){
+    li.classList.toggle('done');
+    var done = li.classList.contains('done');
+    li.setAttribute('aria-checked', done ? 'true' : 'false');
+    if (done && !reduceMotion){
+      /* 打勾 pop 动效（移除再加回以重新触发） */
+      li.classList.remove('pop');
+      void li.offsetWidth;
+      li.classList.add('pop');
+    }
+    persistChecks();
+    renderProgress();
+  }
+  function scrollToNext(){
+    var next = findNextUnchecked();
+    if (!next) return;
+    expandIfCollapsed(next.el);
+    next.el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+    window.setTimeout(function(){
+      try { next.el.focus({ preventScroll: true }); } catch(e){ next.el.focus(); }
+    }, reduceMotion ? 0 : 450);
+  }
+  function initChecklist(){
+    var saved = store.get(CHECK_KEY, {});
+    $$('ul.check').forEach(function(ul){
+      $$('li', ul).forEach(function(li){
+        var id = hashId((li.textContent || '').replace(/\s+/g, ' ').trim());
+        var done = !!saved[id];
+        li.classList.toggle('done', done);
+        li.title = '点击或按空格勾选';
+        li.tabIndex = 0;
+        li.setAttribute('role', 'checkbox');
+        li.setAttribute('aria-checked', done ? 'true' : 'false');
+        checkItems.push({ el: li, id: id });
+      });
+    });
+    stageCache = STAGES.map(function(sid){
+      var sec = document.getElementById(sid);
+      return {
+        id: sid,
+        items: sec ? $$('ul.check li', sec) : [],
+        bars: $$('[data-mini="' + sid + '"]'),
+        labs: $$('[data-mini-label="' + sid + '"]')
+      };
+    });
+    /* 事件委托：点击 + 键盘（Space / Enter） */
+    var main = $('#main');
+    if (main){
+      main.addEventListener('click', function(e){
+        var t = e.target;
+        if (t && t.closest && t.closest('a')) return;  /* 条目内链接只跳转，不勾选 */
+        var li = t && t.closest ? t.closest('li') : null;
+        if (isCheckLi(li)) toggleItem(li);
+      });
+      main.addEventListener('keydown', function(e){
+        if (e.key !== ' ' && e.key !== 'Enter') return;
+        if (!isCheckLi(e.target)) return;
+        e.preventDefault();
+        toggleItem(e.target);
+      });
+    }
+    var continueBtn = $('#continueBtn');
+    if (continueBtn) continueBtn.addEventListener('click', scrollToNext);
+    renderProgress();
+  }
+
+  /* ============================================================
+     3. 章节折叠：按钮由 JS 注入（无 JS 时不出现死按钮），状态记忆
+     ============================================================ */
+  var COLLAPSE_KEY = 'embedded-plan-collapsed-v1';
+  var collapsedIds = store.get(COLLAPSE_KEY, []);
+  var CHEVRON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+  function setCollapsed(sec, btn, off){
+    sec.classList.toggle('collapsed', off);
+    if (btn) btn.setAttribute('aria-expanded', off ? 'false' : 'true');
+    collapsedIds = collapsedIds.filter(function(id){ return id !== sec.id; });
+    if (off) collapsedIds.push(sec.id);
+    store.set(COLLAPSE_KEY, collapsedIds);
+  }
+  function expandIfCollapsed(el){
+    var sec = el && el.closest ? el.closest('section') : null;
+    if (sec && sec.classList.contains('collapsed')){
+      setCollapsed(sec, sec.querySelector('.collapse-btn'), false);
+    }
+  }
+  function initCollapse(){
+    $$('.sec-head').forEach(function(head){
+      var sec = head.closest('section');
+      if (!sec || !sec.id) return;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'collapse-btn';
+      btn.setAttribute('aria-label', '折叠 / 展开本章节');
+      btn.innerHTML = CHEVRON_SVG;
+      setCollapsed(sec, btn, collapsedIds.indexOf(sec.id) !== -1);
+      btn.addEventListener('click', function(){
+        setCollapsed(sec, btn, !sec.classList.contains('collapsed'));
+      });
+      head.appendChild(btn);
+    });
+  }
+
+  /* ============================================================
+     4. 导航：移动端抽屉 + 页内锚点联动
+     ============================================================ */
+  function initNav(){
+    var menuBtn = $('#menuBtn');
+    var overlay = $('#drawerOverlay');
+    function setDrawer(open){
+      document.body.classList.toggle('drawer-open', open);
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    if (menuBtn) menuBtn.addEventListener('click', function(){
+      setDrawer(!document.body.classList.contains('drawer-open'));
+    });
+    if (overlay) overlay.addEventListener('click', function(){ setDrawer(false); });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape') setDrawer(false);
+    });
+    /* 页内锚点：关闭抽屉；目标章节若已折叠则自动展开 */
+    document.addEventListener('click', function(e){
+      var t = e.target;
+      var a = t && t.closest ? t.closest('a[href^="#"]') : null;
+      if (!a) return;
+      if (a.classList.contains('side-link')) setDrawer(false);
+      var id = a.getAttribute('href').slice(1);
+      var sec = id && document.getElementById(id);
+      if (sec) expandIfCollapsed(sec);
+    });
+  }
+
+  /* ============================================================
+     5. 滚动：阅读进度条 + scroll-spy + 顶栏阴影 + 回到顶部
+     ============================================================ */
+  function initScroll(){
+    var readProg = $('#readProgress');
+    var topBtn = $('#topBtn');
+    var topbar = $('.topbar');
+    var sidebar = $('#sidebar');
+    var navs = $$('.side-link');
+    var sections = $$('main section[id]');
+    var ticking = false;
+    function onScroll(){
+      ticking = false;
+      var h = document.documentElement;
+      var pct = h.scrollHeight > h.clientHeight ? (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100 : 0;
+      if (readProg) readProg.style.width = pct + '%';
+      if (topbar) topbar.classList.toggle('scrolled', window.scrollY > 8);
+      var current = sections.length ? sections[0].id : '';
+      for (var i = 0; i < sections.length; i++){
+        if (sections[i].getBoundingClientRect().top <= 130) current = sections[i].id;
+      }
+      navs.forEach(function(a){
+        var on = a.getAttribute('href') === '#' + current;
+        a.classList.toggle('active', on);
+        if (on){
+          a.setAttribute('aria-current', 'true');
+          /* 让高亮项保持在侧边栏可视区域内 */
+          if (sidebar && !document.body.classList.contains('drawer-open')){
+            var r = a.getBoundingClientRect();
+            var sr = sidebar.getBoundingClientRect();
+            if (r.top < sr.top + 60 || r.bottom > sr.bottom - 40){
+              a.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+            }
+          }
+        } else a.removeAttribute('aria-current');
+      });
+      if (topBtn) topBtn.classList.toggle('show', window.scrollY > 600);
+    }
+    window.addEventListener('scroll', function(){
+      if (!ticking){ ticking = true; requestAnimationFrame(onScroll); }
+    }, { passive: true });
+    if (topBtn) topBtn.addEventListener('click', function(){
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+    onScroll();
+  }
+
+  /* ============================================================
+     6. 重置进度 + 打印
+     ============================================================ */
+  function initActions(){
+    function resetAll(){
+      if (!confirm('确定清空全部学习进度吗？此操作不可撤销。')) return;
+      checkItems.forEach(function(it){
+        it.el.classList.remove('done');
+        it.el.setAttribute('aria-checked', 'false');
+      });
+      store.remove(CHECK_KEY);
+      renderProgress();
+    }
+    $$('[data-action="reset"]').forEach(function(b){ b.addEventListener('click', resetAll); });
+    var printBtn = $('#printBtn');
+    if (printBtn) printBtn.addEventListener('click', function(){ window.print(); });
+  }
+
+  /* ============================================================
+     7. 滚动揭示动效（reduced-motion 或不支持 IntersectionObserver 时跳过）
+     ============================================================ */
+  function initReveal(){
+    if (reduceMotion || !('IntersectionObserver' in window)) return;
+    var targets = $$('main .card, main .table-wrap, main .timeline, main .callout, main .note, main .quickmap, main .signal-board, main .progress-card, main .focus-zone');
+    if (!targets.length) return;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (!en.isIntersecting) return;
+        var el = en.target;
+        el.classList.add('in');
+        io.unobserve(el);
+        /* 过渡结束后移除类，恢复元素自身的 hover 过渡时序 */
+        window.setTimeout(function(){ el.classList.remove('reveal', 'in'); }, 600);
+      });
+    }, { threshold: 0.06, rootMargin: '0px 0px -32px 0px' });
+    targets.forEach(function(el){
+      el.classList.add('reveal');
+      io.observe(el);
+    });
+  }
+
+  /* ============================================================
+     8. 章节锚点复制（h2 悬浮按钮，JS 注入）
+     ============================================================ */
+  function initAnchors(){
+    var LINK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+    $$('.sec-head h2').forEach(function(h2){
+      var sec = h2.closest('section');
+      if (!sec || !sec.id) return;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'h2-anchor';
+      btn.title = '复制本章节链接';
+      btn.setAttribute('aria-label', '复制本章节链接');
+      btn.innerHTML = LINK_SVG;
+      btn.addEventListener('click', function(){
+        var url = location.href.split('#')[0] + '#' + sec.id;
+        function done(){
+          btn.classList.add('copied');
+          btn.title = '已复制';
+          window.setTimeout(function(){
+            btn.classList.remove('copied');
+            btn.title = '复制本章节链接';
+          }, 1200);
+        }
+        function fallback(){
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); done(); } catch(e){}
+          document.body.removeChild(ta);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(url).then(done, fallback);
+        } else fallback();
+      });
+      h2.appendChild(btn);
+    });
+  }
+
+  /* ============================================================
+     启动
+     ============================================================ */
+  initTheme();
+  initCollapse();
+  initChecklist();
+  initNav();
+  initScroll();
+  initActions();
+  initReveal();
+  initAnchors();
+})();
+</script>
+</body>
+</html>
