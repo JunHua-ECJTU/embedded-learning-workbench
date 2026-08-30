@@ -11,7 +11,11 @@
 /* 主题预初始化：避免深色模式加载时闪烁 */
 (function(){
   var t = null;
-  try { t = localStorage.getItem('embedded-plan-theme'); } catch(e){}
+  try {
+    var rawTheme = localStorage.getItem('emb-wb:theme');
+    if (rawTheme === null) rawTheme = localStorage.getItem('embedded-plan-theme');
+    t = rawTheme === null ? null : JSON.parse(rawTheme);
+  } catch(e){}
   if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', t);
 })();
@@ -379,20 +383,21 @@ footer p{font-size:13.5px;color:var(--ink2);max-width:75ch;line-height:1.7}
       <span class="brand-text">嵌入式学习计划<small>AUTOMATION → FIRMWARE</small></span>
     </a>
     <div class="topbar-spacer"></div>
-    <div class="ring-wrap" title="总体学习进度（勾选完成率）">
-      <div class="ring" role="img" aria-label="总体进度">
+    <div class="ring-wrap" title="路线清单勾选进度">
+      <div class="ring" role="img" aria-label="路线清单进度">
         <svg viewBox="0 0 36 36" aria-hidden="true">
           <circle class="ring-bg" cx="18" cy="18" r="15.5" stroke-dasharray="97.39 97.39"></circle>
           <circle class="ring-fg" id="ringFill" cx="18" cy="18" r="15.5" stroke-dasharray="97.39 97.39" stroke-dashoffset="97.39"></circle>
         </svg>
         <span id="ringPct">0%</span>
       </div>
-      <span class="ring-label">学习进度</span>
+      <span class="ring-label">路线清单</span>
     </div>
     <button type="button" class="icon-btn" id="themeBtn" aria-label="切换深色模式" title="切换深色 / 浅色">
       <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
       <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/></svg>
     </button>
+    <a class="topbar-btn" href="./index.html">返回学习工作台</a>
     <button type="button" class="topbar-btn" data-action="reset">重置进度</button>
   </div>
 </header>
@@ -464,7 +469,7 @@ footer p{font-size:13.5px;color:var(--ink2);max-width:75ch;line-height:1.7}
         <div class="progress-big" id="progressNum" aria-live="polite">0%</div>
       </div>
       <div class="progress-info">
-        <div class="progress-label" id="progressLabel">总体学习进度 · 点击条目勾选，自动本地保存</div>
+        <div class="progress-label" id="progressLabel">路线清单进度 · 点击条目勾选，自动本地保存</div>
         <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
       </div>
       <button type="button" class="btn-primary" id="continueBtn">继续下一项</button>
@@ -1390,7 +1395,7 @@ footer p{font-size:13.5px;color:var(--ink2);max-width:75ch;line-height:1.7}
      1. 深色模式（配合 <head> 预初始化脚本，切换无闪烁）
      ============================================================ */
   function initTheme(){
-    var THEME_KEY = 'embedded-plan-theme';
+    var THEME_KEY = 'emb-wb:theme';
     var btn = $('#themeBtn');
     var moon = $('#iconMoon');
     var sun = $('#iconSun');
