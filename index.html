@@ -396,14 +396,77 @@
     .focus-task-link { margin-top: var(--space-3); }
     .focus-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); gap: var(--space-4); align-items: start; }
     .focus-card { text-align: center; }
-    .focus-modes { display: flex; justify-content: center; gap: var(--space-1); flex-wrap: wrap; margin-bottom: var(--space-6); }
+    .focus-modes { display: flex; justify-content: center; gap: var(--space-1); flex-wrap: wrap; margin-bottom: var(--space-4); }
     .focus-modes button { min-height: 40px; border: 1px solid var(--line); border-radius: var(--radius-field); background: transparent; color: var(--text-soft); padding: var(--space-2) var(--space-4); cursor: pointer; font-weight: 700; }
     .focus-modes button.active { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent); }
     .focus-mode-label { margin: 0; color: var(--accent); font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 700; }
-    .focus-clock { margin: var(--space-5) 0 var(--space-6); }
-    .focus-clock strong { display: block; margin-top: var(--space-2); color: var(--text); font: 700 88px/1 var(--font-mono); letter-spacing: 0; }
-    .focus-clock p { margin: var(--space-3) 0 0; color: var(--text-soft); }
-    .focus-actions { display: flex; justify-content: center; gap: var(--space-2); }
+    .focus-target-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      margin: var(--space-3) 0 var(--space-4);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-field);
+      background: var(--accent-soft);
+      text-align: left;
+    }
+    .focus-target-info { min-width: 0; }
+    .focus-target-info .view-kicker { margin: 0 0 2px; }
+    .focus-target-title { margin: 0; font-weight: 700; font-size: var(--text-sm); overflow-wrap: anywhere; }
+    .focus-target-actions { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+    .focus-dial-wrap {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      margin: var(--space-4) auto var(--space-5);
+      display: grid;
+      place-items: center;
+    }
+    .focus-dial-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .focus-dial-bg {
+      fill: none;
+      stroke: var(--surface-muted);
+      stroke-width: 6px;
+    }
+    .focus-dial-meter {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 6px;
+      stroke-linecap: round;
+      stroke-dasharray: 641;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 0.3s cubic-bezier(0.4, 0, 0.2, 1), stroke var(--motion-fast) ease;
+    }
+    .focus-dial-wrap .focus-clock {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      text-align: center;
+    }
+    .focus-dial-wrap .focus-clock strong {
+      display: block;
+      color: var(--text);
+      font: 700 56px/1 var(--font-mono);
+      letter-spacing: -1px;
+    }
+    .focus-dial-wrap .focus-clock p {
+      margin: var(--space-2) 0 0;
+      color: var(--text-soft);
+      font-size: var(--text-xs);
+      max-width: 190px;
+      margin-inline: auto;
+    }
+    .focus-actions { display: flex; justify-content: center; gap: var(--space-2); flex-wrap: wrap; }
+    .sound-toggle-btn { color: var(--text-soft); }
+    .sound-toggle-btn:hover { color: var(--text); }
     .focus-status { min-height: 24px; margin: var(--space-4) 0 0; color: var(--text-faint); font-size: var(--text-xs); }
     .focus-guide ol { margin: 0; padding-inline-start: var(--space-5); color: var(--text-soft); }
     .focus-guide li + li { margin-top: var(--space-3); }
@@ -416,8 +479,26 @@
     .support-link:hover { color: var(--accent); }
     .milestone-focus { border-inline-start: 3px solid var(--accent); }
 
+    @keyframes circuitPulse {
+      0% {
+        box-shadow: 0 0 0 0 var(--accent-line), inset 0 0 0 1px var(--accent);
+        background-color: var(--accent-soft);
+      }
+      50% {
+        box-shadow: 0 0 14px 2px var(--accent-line), inset 0 0 0 1px var(--accent-hover);
+        background-color: var(--accent-soft);
+      }
+      100% {
+        box-shadow: 0 0 0 0 transparent, inset 0 0 0 0 transparent;
+        background-color: transparent;
+      }
+    }
     .task-list { list-style: none; margin: 0; padding: 0; display: grid; }
-    .task-row { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--line); }
+    .task-row { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-3); align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--line); transition: background-color var(--motion-standard) ease; }
+    .task-row.just-completed {
+      animation: circuitPulse 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+      border-radius: var(--radius-field);
+    }
     .task-row:last-child { border-bottom: 0; }
     .task-row.is-done .task-title { color: var(--text-faint); text-decoration: line-through; }
     .task-check { position: relative; width: 24px; height: 24px; }
@@ -490,13 +571,34 @@
     .note-card { display: grid; gap: var(--space-4); }
     .note-content { margin: 0; white-space: pre-wrap; font-size: var(--text-md); line-height: 1.7; overflow-wrap: anywhere; }
     .note-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); color: var(--text-faint); font-size: var(--text-xs); }
+    .inline-code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--surface-muted);
+      border: 1px solid var(--line);
+      color: var(--accent);
+      vertical-align: 1px;
+    }
 
     .milestone-list { position: relative; display: grid; gap: var(--space-3); padding-inline-start: var(--space-8); }
     .milestone-list::before { content: ""; position: absolute; inset-block: var(--space-5); inset-inline-start: 11px; width: 1px; background: var(--line-strong); }
     .milestone-card { position: relative; }
-    .milestone-card::before { content: ""; position: absolute; top: var(--space-5); left: -28px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line-strong); }
-    .milestone-card.passed::before, .milestone-card.target::before { border-color: var(--accent); background: var(--accent); }
+    .milestone-card::before { content: ""; position: absolute; top: var(--space-5); left: -28px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line-strong); transition: box-shadow var(--motion-standard) ease, background var(--motion-standard) ease; }
+    .milestone-card.passed::before { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .milestone-card.target::before { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-soft), 0 0 10px var(--accent); }
     .milestone-card.target { border-color: var(--accent-line); box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow-1); }
+    .backup-badge {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 6px var(--warning);
+      flex: none;
+      margin-inline-start: auto;
+    }
     .milestone-code { font: 700 var(--text-xl)/1 var(--font-mono); }
     .milestone-goal { margin: 0 0 var(--space-4); color: var(--text-soft); font-size: var(--text-md); line-height: 1.7; }
     .milestone-details { margin-bottom: var(--space-5); }
@@ -721,7 +823,11 @@
       .dialog-actions .button { width: 100%; }
       .focus-actions { flex-direction: column; }
       .focus-actions .button { width: 100%; }
-      .focus-clock strong { font-size: 64px; }
+      .focus-dial-wrap { width: 220px; height: 220px; }
+      .focus-dial-wrap .focus-clock strong { font-size: 48px; }
+      .focus-target-banner { flex-direction: column; align-items: flex-start; }
+      .focus-target-actions { width: 100%; justify-content: space-between; }
+      .focus-target-actions .button { flex: 1; }
       .button, .button.small, .icon-button { min-height: var(--touch); }
       .range-controls { grid-template-columns: var(--touch) minmax(0, 1fr) var(--touch); }
       .icon-button { width: var(--touch); min-width: var(--touch); height: var(--touch); }
@@ -769,6 +875,8 @@
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
     <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 14h5l2 3h2l2-3h5"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></symbol>
+    <symbol id="i-volume-x" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="22" y1="9" x2="16" y2="15"/><line x1="16" y1="9" x2="22" y2="15"/></symbol>
   </svg>
 
   <div class="app-shell">
@@ -791,7 +899,7 @@
         <a class="tool-link" href="./嵌入式学习计划.html" target="_blank" rel="noopener"><svg class="icon"><use href="#i-external"></use></svg><span class="tool-label">打开学习计划</span></a>
         <button class="tool-button" type="button" data-action="toggle-theme"><svg class="icon icon-moon"><use href="#i-moon"></use></svg><svg class="icon icon-sun"><use href="#i-sun"></use></svg><span class="tool-label" data-theme-label>切换浅色</span></button>
         <details class="sidebar-details">
-          <summary class="tool-button"><svg class="icon"><use href="#i-more"></use></svg><span class="tool-label">数据与设置</span></summary>
+          <summary class="tool-button"><svg class="icon"><use href="#i-more"></use></svg><span class="tool-label">数据与设置</span><span class="backup-badge" hidden title="建议导出备份"></span></summary>
           <div class="sidebar-details-panel">
             <button class="tool-button" type="button" data-action="export-data"><svg class="icon"><use href="#i-download"></use></svg><span class="tool-label">导出备份</span></button>
             <button class="tool-button" type="button" data-action="import-data"><svg class="icon"><use href="#i-upload"></use></svg><span class="tool-label">导入备份</span></button>
@@ -810,7 +918,7 @@
         <div class="mobile-actions">
           <button class="button icon-button ghost" type="button" data-action="toggle-theme" aria-label="切换主题"><svg class="icon icon-moon"><use href="#i-moon"></use></svg><svg class="icon icon-sun"><use href="#i-sun"></use></svg></button>
           <details class="mobile-settings">
-            <summary class="button icon-button ghost" aria-label="数据与设置" title="数据与设置"><svg class="icon"><use href="#i-more"></use></svg></summary>
+            <summary class="button icon-button ghost" aria-label="数据与设置" title="数据与设置" style="position:relative"><svg class="icon"><use href="#i-more"></use></svg><span class="backup-badge" hidden title="建议导出备份" style="position:absolute;top:4px;right:4px"></span></summary>
             <div class="mobile-settings-panel">
               <a class="tool-link" href="./嵌入式学习计划.html" target="_blank" rel="noopener"><svg class="icon"><use href="#i-external"></use></svg><span>打开学习计划</span></a>
               <button class="tool-button" type="button" data-action="export-data"><svg class="icon"><use href="#i-download"></use></svg><span>导出备份</span></button>
@@ -949,7 +1057,17 @@
       }
 
       function createTimer(mode = 'focus') {
-        return { mode, remaining: TIMER_MODES[mode].seconds, running: false, updatedAt: Date.now(), endsAt: null, sessions: 0 };
+        return {
+          mode,
+          remaining: TIMER_MODES[mode].seconds,
+          running: false,
+          updatedAt: Date.now(),
+          endsAt: null,
+          sessions: 0,
+          taskId: null,
+          taskTitle: '',
+          soundEnabled: true
+        };
       }
 
       function normalizeTimer(value) {
@@ -969,7 +1087,43 @@
           }
           running = remaining > 0;
         }
-        return { mode, remaining, running, updatedAt: now, endsAt: running ? endsAt : null, sessions: Math.max(0, Number(value?.sessions) || 0) };
+        return {
+          mode,
+          remaining,
+          running,
+          updatedAt: now,
+          endsAt: running ? endsAt : null,
+          sessions: Math.max(0, Number(value?.sessions) || 0),
+          taskId: value?.taskId ? String(value.taskId) : null,
+          taskTitle: typeof value?.taskTitle === 'string' ? value.taskTitle : '',
+          soundEnabled: value?.soundEnabled !== false
+        };
+      }
+
+      function playChime() {
+        if (timer.soundEnabled === false) return;
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          const ctx = new AudioCtx();
+          const now = ctx.currentTime;
+          const notes = [659.25, 987.77];
+          notes.forEach((freq, index) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const startTime = now + index * 0.12;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0.001, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.14, startTime + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.45);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + 0.45);
+          });
+          setTimeout(() => { ctx.close().catch(() => {}); }, 1000);
+        } catch (error) {}
       }
 
       function persistTimer() {
@@ -1060,9 +1214,9 @@
           ],
           stages: createStages(true),
           notes: [
-            { id: 'note-pointer', category: 'C语言', phase: 'P0', content: '指针加一移动的是所指类型的字节数，不一定是一个字节。检查数组越界时要同时看元素个数和指针类型。', createdAt: new Date().toISOString() },
-            { id: 'note-pwm', category: 'STM32', phase: 'P1', content: 'PWM 实验：固定计数周期后，占空比由比较值决定。改频率时要同时核对时钟源、预分频和自动重装值。', createdAt: new Date(Date.now() - 3600000).toISOString() },
-            { id: 'note-circuit', category: '电路', phase: 'P0', content: '按键输入悬空会产生随机电平；内部上下拉能稳定默认状态，长线仍需关注干扰与硬件滤波。', createdAt: new Date(Date.now() - 86400000).toISOString() }
+            { id: 'note-pointer', category: 'C语言', phase: 'P0', content: '指针加一移动的是所指类型的字节数，不一定是一个字节。检查 `int *p` 与数组越界时要同时看元素个数和指针类型。', createdAt: new Date().toISOString() },
+            { id: 'note-pwm', category: 'STM32', phase: 'P1', content: 'PWM 实验：固定计数周期后，占空比由比较值 `CCR` 决定。改频率时要核对 `PSC` 预分频和 `ARR` 自动重装值。', createdAt: new Date(Date.now() - 3600000).toISOString() },
+            { id: 'note-circuit', category: '电路', phase: 'P0', content: '按键输入悬空会产生随机电平；内部配置 `PULLUP` 或 `PULLDOWN` 能稳定默认状态，长线仍需关注硬件滤波与去耦电容。', createdAt: new Date(Date.now() - 86400000).toISOString() }
           ],
           milestones: createMilestones(true),
           reviews: [
@@ -1165,6 +1319,19 @@
           .replaceAll('>', '&gt;')
           .replaceAll('"', '&quot;')
           .replaceAll("'", '&#039;');
+      }
+
+      function formatNoteContent(text) {
+        return escapeHTML(text).replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
+      }
+
+      function syncBackupBadge() {
+        const lastExport = store.get('last-exported-at', null);
+        const hasContent = (state.tasks.length + state.notes.length + state.reviews.length) >= 3;
+        const needsBackup = hasContent && (!lastExport || (Date.now() - Number(lastExport) > 7 * 86400000));
+        document.querySelectorAll('.backup-badge').forEach((badge) => {
+          badge.hidden = !needsBackup;
+        });
       }
 
       const PROTECTED_PROSE_TERMS = Object.freeze([
@@ -1293,8 +1460,11 @@
       function taskRow(task, compact) {
         const title = escapeHTML(task.title);
         const date = taskDateLabel(task);
-        const actions = compact ? '' : '<div class="row-actions"><button class="button icon-button ghost" type="button" data-action="edit-task" data-id="' + task.id + '" aria-label="编辑任务：' + title + '" title="编辑">' + icon('edit') + '</button><button class="button icon-button ghost danger" type="button" data-action="delete-task" data-id="' + task.id + '" aria-label="删除任务：' + title + '" title="删除">' + icon('trash') + '</button></div>';
-        return '<li class="task-row' + (task.done ? ' is-done' : '') + '">' +
+        const focusBtn = !task.done ? '<button class="button icon-button ghost" type="button" data-action="focus-task" data-id="' + task.id + '" aria-label="专注此任务：' + title + '" title="专注此任务">' + icon('timer') + '</button>' : '';
+        const actions = compact
+          ? (focusBtn ? '<div class="row-actions">' + focusBtn + '</div>' : '')
+          : '<div class="row-actions">' + focusBtn + '<button class="button icon-button ghost" type="button" data-action="edit-task" data-id="' + task.id + '" aria-label="编辑任务：' + title + '" title="编辑">' + icon('edit') + '</button><button class="button icon-button ghost danger" type="button" data-action="delete-task" data-id="' + task.id + '" aria-label="删除任务：' + title + '" title="删除">' + icon('trash') + '</button></div>';
+        return '<li class="task-row' + (task.done ? ' is-done' : '') + '" id="task-row-' + task.id + '">' +
           '<label class="task-check"><input type="checkbox" data-action="toggle-task" data-id="' + task.id + '" aria-label="' + (task.done ? '恢复为未完成：' : '完成任务：') + title + '"' + (task.done ? ' checked' : '') + '><span aria-hidden="true"></span></label>' +
           '<div class="task-main"><span class="task-title">' + title + '</span><div class="task-meta"><span class="tag phase">' + escapeHTML(PHASE_LABELS[task.phase]) + '</span><span class="tag ' + task.priority + '">' + PRIORITY_LABELS[task.priority] + '优先级</span><span class="tag ' + date.className + '">' + escapeHTML(date.text) + '</span></div></div>' + actions + '</li>';
       }
@@ -1323,7 +1493,12 @@
         const mode = TIMER_MODES[timer.mode];
         const status = timer.running ? (timer.mode === 'focus' ? '专注进行中，把注意力留给当前任务。' : '休息进行中，离开屏幕放松一下。') : (timer.remaining === 0 ? '本轮已结束，可以开始下一轮。' : '准备好后开始计时。');
         const actionLabel = timer.running ? '暂停计时' : (timer.remaining === 0 ? '重新开始' : '开始计时');
-        return '<div class="view-inner">' + intro('专注练习', '番茄钟', '用一段完整的时间只做一件事。默认 25 分钟专注，完成后再安排短休息。', '<span class="date-chip">已完成 ' + timer.sessions + ' 个专注回合</span>') + '<div class="focus-layout"><section class="card focus-card"><div class="focus-modes" role="tablist" aria-label="选择计时模式">' + Object.entries(TIMER_MODES).map(([key, item]) => '<button type="button" role="tab" data-action="timer-mode" data-mode="' + key + '" aria-selected="' + (timer.mode === key) + '" class="' + (timer.mode === key ? 'active' : '') + '">' + item.label + '</button>').join('') + '</div><p class="focus-mode-label">' + escapeHTML(mode.label) + '</p><div class="focus-clock" aria-live="polite"><strong id="focus-time">' + formatTimer(timer.remaining) + '</strong><p id="focus-state">' + escapeHTML(status) + '</p></div><div class="focus-actions"><button class="button primary" type="button" data-action="timer-toggle">' + icon(timer.running ? 'pause' : 'play') + actionLabel + '</button><button class="button ghost" type="button" data-action="timer-reset">' + icon('reset') + '重置本轮</button></div><p class="focus-status" id="focus-status">完成一个专注回合后会自动累计次数；切换模式会从该模式的完整时长重新开始。</p></section><section class="card focus-guide"><div class="card-header"><div><p class="view-kicker">建议用法</p><h2 class="card-title">把计时和任务配起来</h2><p class="card-description">开始前先选一项具体任务，计时结束后再勾选完成或记录阻塞。</p><a class="button small ghost focus-task-link" href="#/tasks">去任务清单选一项' + icon('arrow') + '</a></div></div><ol><li><strong>选一项任务：</strong>例如“完成 10 道指针练习并订正错题”。</li><li><strong>开始专注：</strong>25 分钟内只处理这一项，不在任务之间来回切换。</li><li><strong>结束后记录：</strong>勾选完成、写一条笔记，或切换到 5 分钟短休息。</li></ol></section></div></div>';
+        const total = mode.seconds;
+        const progress = total > 0 ? (timer.remaining / total) : 0;
+        const offset = (641 * (1 - progress)).toFixed(1);
+        const taskBanner = timer.taskTitle ? '<div class="focus-target-banner"><div class="focus-target-info"><span class="view-kicker">当前专注任务</span><p class="focus-target-title">' + escapeHTML(timer.taskTitle) + '</p></div><div class="focus-target-actions">' + (timer.taskId ? '<button class="button small primary" type="button" data-action="complete-focused-task" data-id="' + escapeHTML(timer.taskId) + '">' + icon('check') + '标记已完成</button>' : '') + '<button class="button small icon-button ghost" type="button" data-action="clear-focused-task" title="解除任务关联" aria-label="解除任务关联">' + icon('close') + '</button></div></div>' : '';
+        const soundBtn = '<button class="button small ghost sound-toggle-btn' + (timer.soundEnabled ? ' is-active' : '') + '" type="button" data-action="toggle-timer-sound" title="' + (timer.soundEnabled ? '已开启提示音（点击静音）' : '已静音（点击开启提示音）') + '">' + icon(timer.soundEnabled ? 'volume' : 'volume-x') + '<span>' + (timer.soundEnabled ? '提示音开' : '静音') + '</span></button>';
+        return '<div class="view-inner">' + intro('专注练习', '番茄钟', '用一段完整的时间只做一件事。默认 25 分钟专注，完成后再安排短休息。', '<span class="date-chip">已完成 ' + timer.sessions + ' 个专注回合</span>') + '<div class="focus-layout"><section class="card focus-card"><div class="focus-modes" role="tablist" aria-label="选择计时模式">' + Object.entries(TIMER_MODES).map(([key, item]) => '<button type="button" role="tab" data-action="timer-mode" data-mode="' + key + '" aria-selected="' + (timer.mode === key) + '" class="' + (timer.mode === key ? 'active' : '') + '">' + item.label + '</button>').join('') + soundBtn + '</div>' + taskBanner + '<p class="focus-mode-label">' + escapeHTML(mode.label) + '</p><div class="focus-dial-wrap"><svg class="focus-dial-svg" viewBox="0 0 240 240" aria-hidden="true"><circle class="focus-dial-bg" cx="120" cy="120" r="102" /><circle class="focus-dial-meter" id="focus-dial-meter" cx="120" cy="120" r="102" style="stroke-dashoffset:' + offset + '" /></svg><div class="focus-clock" aria-live="polite"><strong id="focus-time">' + formatTimer(timer.remaining) + '</strong><p id="focus-state">' + escapeHTML(status) + '</p></div></div><div class="focus-actions"><button class="button primary" type="button" data-action="timer-toggle">' + icon(timer.running ? 'pause' : 'play') + actionLabel + '</button><button class="button ghost" type="button" data-action="timer-reset">' + icon('reset') + '重置本轮</button></div><p class="focus-status" id="focus-status">完成一个专注回合后会自动累计次数；切换模式会从该模式的完整时长重新开始。</p></section><section class="card focus-guide"><div class="card-header"><div><p class="view-kicker">建议用法</p><h2 class="card-title">把计时和任务配起来</h2><p class="card-description">在任务列表点击闹钟图标即可直接带入专注目标，结束后一键标记完成。</p><a class="button small ghost focus-task-link" href="#/tasks">去任务清单选一项' + icon('arrow') + '</a></div></div><ol><li><strong>选一项任务：</strong>点击任务行右侧的时钟图标，直接将该任务带入专注界面。</li><li><strong>开始专注：</strong>25 分钟内只处理这一项，不在任务之间来回切换。</li><li><strong>结束后记录：</strong>倒计时结束播放提示音，可在上方一键勾选该任务已完成。</li></ol></section></div></div>';
       }
 
       function renderTasks() {
@@ -1368,7 +1543,7 @@
 
       function renderNotes() {
         const notes = state.notes.filter((note) => ui.noteCategory === 'all' || note.category === ui.noteCategory);
-        const cards = notes.length ? '<div class="note-grid">' + notes.map((note) => { const label = escapeHTML(note.content.slice(0, 24)); return '<article class="card note-card"><div class="card-header"><div class="meta-row"><span class="tag ' + categoryClass(note.category) + '">' + escapeHTML(note.category) + '</span><span class="tag phase">' + escapeHTML(PHASE_LABELS[note.phase]) + '</span></div><div class="row-actions"><button class="button icon-button ghost" type="button" data-action="edit-note" data-id="' + note.id + '" aria-label="编辑笔记：' + label + '" title="编辑">' + icon('edit') + '</button><button class="button icon-button ghost danger" type="button" data-action="delete-note" data-id="' + note.id + '" aria-label="删除笔记：' + label + '" title="删除">' + icon('trash') + '</button></div></div><p class="note-content">' + escapeHTML(note.content) + '</p><footer class="note-footer"><span>' + escapeHTML(formatDateTime(note.createdAt)) + '</span></footer></article>'; }).join('') + '</div>' : emptyState('这个分类还没有笔记', '从上方快速记录一个结论、现象或易错点。', 'notes');
+        const cards = notes.length ? '<div class="note-grid">' + notes.map((note) => { const label = escapeHTML(note.content.slice(0, 24)); return '<article class="card note-card"><div class="card-header"><div class="meta-row"><span class="tag ' + categoryClass(note.category) + '">' + escapeHTML(note.category) + '</span><span class="tag phase">' + escapeHTML(PHASE_LABELS[note.phase]) + '</span></div><div class="row-actions"><button class="button icon-button ghost" type="button" data-action="edit-note" data-id="' + note.id + '" aria-label="编辑笔记：' + label + '" title="编辑">' + icon('edit') + '</button><button class="button icon-button ghost danger" type="button" data-action="delete-note" data-id="' + note.id + '" aria-label="删除笔记：' + label + '" title="删除">' + icon('trash') + '</button></div></div><p class="note-content">' + formatNoteContent(note.content) + '</p><footer class="note-footer"><span>' + escapeHTML(formatDateTime(note.createdAt)) + '</span></footer></article>'; }).join('') + '</div>' : emptyState('这个分类还没有笔记', '从上方快速记录一个结论、现象或易错点。', 'notes');
         return '<div class="view-inner">' + intro('学习记录', '知识笔记', '把刚学会的结论、实验现象或错误原因写下来。分类和阶段会保存到笔记上，方便之后查找。', '<span class="date-chip">' + state.notes.length + ' 条记录</span>') + '<section class="card" style="margin-bottom:var(--space-4)"><div class="form-section-heading"><h2>新建知识笔记</h2><p>用一两句话写清现象和结论；分类表示内容主题，学习阶段表示它属于哪段路线。</p></div><form class="note-create-form" data-form="note"><label class="field-label" for="note-category">内容分类<select class="field" id="note-category" name="category">' + categoryOptions('C语言') + '</select></label><label class="field-label" for="note-phase">属于哪个学习阶段<select class="field" id="note-phase" name="phase">' + phaseOptions(currentStage()?.id || 'P0') + '</select></label><label class="field-label wide" for="note-content">笔记内容<input class="field" id="note-content" name="content" required maxlength="500" placeholder="例如：按键引脚悬空会出现随机电平，需要配置上拉或下拉"></label><button class="button primary" type="submit">' + icon('plus') + '保存笔记</button></form><div class="task-filter-area"><div class="form-section-heading"><h2>查看已有笔记</h2><p>这里的选择只会筛选列表，不会修改已经保存的笔记。</p></div><div class="filter-cluster"><label class="field-label" for="note-filter">只看某个分类<select class="field" id="note-filter" data-filter="note-category">' + categoryOptions(ui.noteCategory, '所有分类') + '</select></label></div></div></section>' + cards + '</div>';
       }
 
@@ -1408,6 +1583,7 @@
         const moreNav = document.querySelector('.mobile-more-nav');
         moreNav.classList.toggle('is-current', currentRoute === 'milestones' || currentRoute === 'review' || currentRoute === 'focus');
         updateTimerView();
+        syncBackupBadge();
         document.title = pageNames[currentRoute] + ' | 嵌入式学习工作台';
       }
 
@@ -1418,10 +1594,16 @@
         const stateText = document.getElementById('focus-state');
         const status = document.getElementById('focus-status');
         const toggle = document.querySelector('[data-action="timer-toggle"]');
+        const meter = document.getElementById('focus-dial-meter');
         if (time) time.textContent = formatTimer(timer.remaining);
         if (stateText) stateText.textContent = timer.running ? (timer.mode === 'focus' ? '专注进行中，把注意力留给当前任务。' : '休息进行中，离开屏幕放松一下。') : (timer.remaining === 0 ? '本轮已结束，可以开始下一轮。' : '准备好后开始计时。');
         if (toggle) {
           toggle.innerHTML = icon(timer.running ? 'pause' : 'play') + (timer.running ? '暂停计时' : (timer.remaining === 0 ? '重新开始' : '开始计时'));
+        }
+        if (meter) {
+          const total = mode.seconds;
+          const progress = total > 0 ? (timer.remaining / total) : 0;
+          meter.style.strokeDashoffset = (641 * (1 - progress)).toFixed(1);
         }
         if (status) status.textContent = '当前模式：' + mode.label + ' · 已完成 ' + timer.sessions + ' 个专注回合';
       }
@@ -1438,7 +1620,9 @@
           timer.running = false;
           timer.endsAt = null;
           if (timer.mode === 'focus') timer.sessions += 1;
-          notify(timer.mode === 'focus' ? '专注时间结束，休息一下' : '休息结束，准备开始下一轮');
+          playChime();
+          const doneMsg = timer.taskTitle ? '本轮专注完成！任务：' + timer.taskTitle : (timer.mode === 'focus' ? '专注时间结束，休息一下' : '休息结束，准备开始下一轮');
+          notify(doneMsg);
         }
         persistTimer();
         updateTimerView();
@@ -1534,6 +1718,8 @@
         link.click();
         link.remove();
         setTimeout(() => URL.revokeObjectURL(link.href), 0);
+        store.set('last-exported-at', Date.now());
+        syncBackupBadge();
         notify('备份已导出');
       }
 
@@ -1549,6 +1735,8 @@
           persistTimer();
           persist();
           ui.editingReview = null;
+          store.set('last-exported-at', Date.now());
+          syncBackupBadge();
           render();
           notify('备份已导入');
         } catch (error) {
@@ -1644,9 +1832,19 @@
           if (task) {
             task.done = target.checked;
             task.completedAt = task.done ? new Date().toISOString() : null;
+            if (task.done && timer.taskId === task.id) {
+              timer.taskId = null;
+              persistTimer();
+            }
             persist();
             notify(task.done ? '任务已完成' : '任务已恢复');
-            render();
+            const row = document.getElementById('task-row-' + task.id);
+            if (row && task.done) {
+              row.classList.add('just-completed');
+              setTimeout(() => render(), 360);
+            } else {
+              render();
+            }
           }
         }
         if (target.matches('[data-filter="task-phase"]')) { ui.taskPhase = target.value; render(); }
@@ -1689,6 +1887,44 @@
         if (action === 'timer-mode') setTimerMode(control.dataset.mode);
         if (action === 'timer-toggle') toggleTimer();
         if (action === 'timer-reset') resetTimer();
+        if (action === 'focus-task') {
+          const task = state.tasks.find((item) => item.id === control.dataset.id);
+          if (task) {
+            timer.taskId = task.id;
+            timer.taskTitle = task.title;
+            if (timer.mode !== 'focus') {
+              timer = { ...createTimer('focus'), taskId: task.id, taskTitle: task.title, sessions: timer.sessions, soundEnabled: timer.soundEnabled };
+            }
+            persistTimer();
+            location.hash = '#/focus';
+            notify('已选定任务：“' + task.title + '”，开始专注');
+          }
+        }
+        if (action === 'complete-focused-task') {
+          const task = state.tasks.find((item) => item.id === control.dataset.id);
+          if (task) {
+            task.done = true;
+            task.completedAt = new Date().toISOString();
+            persist();
+            timer.taskId = null;
+            persistTimer();
+            notify('任务已标记完成！');
+            render();
+          }
+        }
+        if (action === 'clear-focused-task') {
+          timer.taskId = null;
+          timer.taskTitle = '';
+          persistTimer();
+          render();
+          notify('已解除关联任务');
+        }
+        if (action === 'toggle-timer-sound') {
+          timer.soundEnabled = !timer.soundEnabled;
+          persistTimer();
+          render();
+          notify(timer.soundEnabled ? '已开启专注结束提示音' : '已关闭提示音');
+        }
         if (action === 'edit-task') {
           const task = state.tasks.find((item) => item.id === control.dataset.id);
           if (task) openEditor('task', task);
